@@ -27,7 +27,7 @@
 #include "camera.h"
 #include "car.h"
 #include "time.h"
-#include "sh_detect.h"
+#include "sh_detect/sh_detect.h"
 
 /**********************************************************************************
 * MACROS
@@ -76,7 +76,6 @@ int main(int argc,char **argv)
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	// Config
 	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	
 	// Load and set system and car configuration parameters
 	ret = set_config(cars_all, sys_conf);
 	if (ret)

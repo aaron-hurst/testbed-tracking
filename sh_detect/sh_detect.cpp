@@ -4,6 +4,7 @@
 // Local includes
 #include "car.h"
 #include "config.h"
+#include "sh_detect/sh_detect.h"
 
 #define FAIL		1
 #define SUCCESS		0

@@ -1,7 +1,7 @@
 #ifndef CARSCV_CAR_H
 #define CARSCV_CAR_H
 
-#include <string>		// string
+#include <string>
 #include "time.h"
 #include "config.h"
 
@@ -13,7 +13,7 @@ struct Car
 {
 	// Identifiers
 	std::string name;
-	std::string mac_add;			// MAC Address
+	std::string mac_add;	// MAC Address
 	
 	// Colour attributes
 	int hue;

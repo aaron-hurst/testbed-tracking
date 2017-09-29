@@ -1,0 +1,40 @@
+# Config file for Autonomous Vehicle Model
+# Any line beginning with "#" is treated as a comment and ignored
+
+# Global parameters
+img_width   = 640
+img_height  = 480
+crop_l 		= 18
+crop_r 		= 18
+crop_t 		= 18
+crop_b 		= 18
+min_sat     = 40
+min_val     = 40
+origin_x	= 16
+origin_y	= 5
+scale		= 1.9302
+min_speed	= 25
+shutter		= 3.03
+size_min    = 250
+size_max    = 600
+
+Car = 1
+name 		= red
+MAC_add		= 00:06:66:61:A3:48
+hue 		= 169
+delta 		= 5
+end = 1
+
+Car = 2
+name 		= orange
+MAC_add		= 00:06:66:61:A9:59
+hue 		= 10
+delta 		= 5
+end = 2
+
+Car = 3
+name 		= blue
+MAC_add		= ZZ:ZZ:66:61:A9:59
+hue 		= 94
+delta 		= 5
+end = 3

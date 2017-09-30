@@ -9,7 +9,6 @@
 #include <string>		// string
 #include <unistd.h>		// sleep
 
-
 /**********************************************************************************
 * CAMERA INCLUDES
 **********************************************************************************/
@@ -24,19 +23,18 @@
 * LOCAL INCLUDES
 **********************************************************************************/
 #include "config.h"
+#include "outputs.h"
 #include "camera.h"
 #include "car.h"
 #include "time.h"
+#include "outputs.h"
 #include "sh_detect/sh_detect.h"
 
 /**********************************************************************************
 * MACROS
 **********************************************************************************/
-#define MODE_LIVE			0
-#define MODE_LIVE_CONS		1
-#define MODE_LIVE_LOG		2
-#define MODE_TEST			3
-#define MODE_DEBUG			4
+#define FAIL		1
+#define SUCCESS		0
 
 /**********************************************************************************
 * NAMESPACES
@@ -51,12 +49,13 @@ int main(int argc,char **argv)
 	* SETUP
 	******************************************************************************/
 	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//-----------------------------------------------------------------------------
 	// Variables
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//-----------------------------------------------------------------------------
 	int n_frames, output_mode, delay;	// arguments
 	int ret;							// function return value
 	float buf[5];						// buffer passed to detection algorithm
+	int sock;							// network socket
 	Config sys_conf;					// store config data
 	Time sys_time;						// store time variables
 	raspicam::RaspiCam_Cv Camera;		// camera object
@@ -64,25 +63,26 @@ int main(int argc,char **argv)
 	std::vector<cv::Mat> masks_all;		// store masks for each car
 	cv::Mat img, img_hsv, crop_mask;	// images
 	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//-----------------------------------------------------------------------------
 	// Arguments
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//-----------------------------------------------------------------------------
 	n_frames 	= atoi(argv[1]);	// number of frames to process
 	output_mode = atoi(argv[2]);	// output mode
 	delay 		= atoi(argv[3]);	// inter-frame delay in milliseconds
 	
-	//TODO: check and display output mode
+	// Check and print output mode to the console
+	output_mode = output_mode_set(output_mode);
 	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//-----------------------------------------------------------------------------
 	// Config
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//-----------------------------------------------------------------------------
 	// Load and set system and car configuration parameters
 	ret = set_config(cars_all, sys_conf);
 	if (ret)
 	{
-		std::cout << "ERROR CRITICAL: parsing configuration file" << std::endl;
+		std::cout << "ERROR CRITICAL: parsing configuration file failed" << std::endl;
 		ret = 0;
-		return 1;
+		return FAIL;
 	}
 	
 	// Print config in debug mode
@@ -106,15 +106,15 @@ int main(int argc,char **argv)
 		masks_all.push_back(mask);
 	}
 	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//-----------------------------------------------------------------------------
 	// Camera
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//-----------------------------------------------------------------------------
 	// Open camera
 	cam_set(Camera, sys_conf);
 	if (!Camera.open())
 	{
         std::cout << "Error opening camera" << std::endl;
-        return 1;
+        return FAIL;
 	}
 	sleep(2);	// wait for camera to "warm up"
 	
@@ -124,19 +124,23 @@ int main(int argc,char **argv)
 	else
 		cam_auto_init(Camera, sys_conf, cars_all.size(), crop_mask, 0);
 	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//-----------------------------------------------------------------------------
 	// Outputs
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	
-	//log file
-	//sockets
-	
-	
+	//-----------------------------------------------------------------------------
+	ret = output_setup(output_mode, sock, cars_all.size());
+	if (ret)
+	{
+		std::cout << "ERROR CRITICAL: setting up output modes failed" << std::endl;
+		ret = 0;
+		return FAIL;
+	}
 	
 	/******************************************************************************
 	* TRACKING (INCLUDING REPORTING)
 	******************************************************************************/
-	
+	sys_time.start = cv::getTickCount();
+	sys_time.old = sys_time.start;
+
 	for (int frame = 0; frame < n_frames; frame++)
 	{
 		// Get image
@@ -168,35 +172,8 @@ int main(int argc,char **argv)
 			cv::waitKey(0);
 		}//for all cars
 		
-		/*
 		// Outputs
-		//TODO: move this switch case into a separate file
-		switch (output_mode) {
-		case MODE_LIVE:
-			//send_json
-			break;
-		case MODE_LIVE_CONS:
-			//send_json
-			//write_console
-			break;
-		case MODE_LIVE_LOG:
-			//send_json
-			//write_console
-			//write_log
-			break;
-		case MODE_TEST:
-			//write_console
-			//write_log
-			break;
-		case MODE_DEBUG:
-			//write_console
-			//write_log
-			//debug stuff
-			break;
-		default:
-			// Code
-			break;
-		}
+		send_outputs(cars_all, output_mode, sock, sys_time, frame + 1);		
 		
 		// Update old data values
 		sys_time.old = sys_time.current;
@@ -204,22 +181,21 @@ int main(int argc,char **argv)
 		{
 			cars_all[ii].state_new_to_old();
 		}
-		*/
-	
+		
 	}//for all frames
 	
 	
 	/******************************************************************************
 	* EXIT
 	******************************************************************************/
-	/*sys_time.end = cv::getTickCount();
+	sys_time.end = cv::getTickCount();
 	sys_time.total = (sys_time.start - sys_time.end) / double (cv::getTickFrequency());
 	cout << endl;
 	cout << "Total time: " << sys_time.total <<" seconds"<<endl;
 	cout << "Total frames: " << n_frames <<endl;
     cout << "Average processing speed: " << sys_time.total/n_frames*1000 << " ms/frame (" << n_frames/sys_time.total<< " fps)" <<endl;
-	*/
+	
 	Camera.release();
 	
-	return 0;
+	return SUCCESS;
 }

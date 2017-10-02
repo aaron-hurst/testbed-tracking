@@ -21,20 +21,20 @@ size_max    = 600
 Car = 1
 name 		= red
 MAC_add		= 00:06:66:61:A3:48
-hue 		= 169
-delta 		= 5
+hue 		= 171
+delta 		= 7
 end = 1
 
 Car = 2
 name 		= orange
 MAC_add		= 00:06:66:61:A9:59
-hue 		= 10
-delta 		= 5
+hue 		= 7
+delta 		= 7
 end = 2
 
 Car = 3
 name 		= blue
 MAC_add		= ZZ:ZZ:66:61:A9:59
-hue 		= 94
-delta 		= 5
+hue 		= 97
+delta 		= 7
 end = 3

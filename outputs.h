@@ -1,6 +1,9 @@
 #ifndef CARSCV_OUTPUTS_H
 #define CARSCV_OUTPUTS_H
 
+#include "time.h"
+#include "car.h"
+#include <sys/socket.h>	// socket comms
 
 #define MODE_LIVE			0
 #define MODE_LIVE_CONS		1
@@ -63,8 +66,9 @@ int send_outputs(std::vector<struct Car> cars_all, int output_mode, int sock, st
 *
 * The JSON string is formatted as:
 *   {"time":<timestamp>, <MAC address>:[x, y, vx, vy, theta, 0, 0], ... }
-* Note that the two trailing zeros in the data array for each vehicle are spare
+* Note 1: the two trailing zeros in the data array for each vehicle are spare
 * values included for convenient extensibility.
+* Note 2: car state information is rounded to the nearest integer before sending.
 * 
 * cars_all      vector containing car structs (with state data)
 * sock          network socket for inter-program communication
@@ -91,7 +95,7 @@ int send_json(std::vector<struct Car> cars_all, int sock, bool debug);
 *
 * return: 0 on success, 1 on failure
 **********************************************************************************/
-int write_console(std::vector<struct Car> cars_all, int frame)
+int write_console(std::vector<struct Car> cars_all, int frame);
 
 
 /**********************************************************************************
@@ -108,7 +112,7 @@ int write_console(std::vector<struct Car> cars_all, int frame)
 *
 * return: 0 on success, 1 on failure
 **********************************************************************************/
-int write_log(std::vector<struct Car> cars_all, struct Time sys_time)
+int write_log(std::vector<struct Car> cars_all, struct Time sys_time);
 
 
 #endif

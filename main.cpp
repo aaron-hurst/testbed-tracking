@@ -27,8 +27,7 @@
 #include "camera.h"
 #include "car.h"
 #include "time.h"
-#include "outputs.h"
-#include "sh_detect/sh_detect.h"
+#include "sh_detect.h"
 
 /**********************************************************************************
 * MACROS
@@ -86,8 +85,7 @@ int main(int argc,char **argv)
 	}
 	
 	// Print config in debug mode
-	if (output_mode == MODE_DEBUG)
-	{
+	if (output_mode == MODE_DEBUG) {
 		show_config(cars_all, sys_conf);
 	}
 	
@@ -148,8 +146,10 @@ int main(int argc,char **argv)
 		Camera.retrieve(img);
 		sys_time.current = cv::getTickCount();	// current time
 		cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);	// convert to HSV
-
-		imshow("source", img);
+		
+		if (output_mode == MODE_DEBUG) {
+			imshow("source", img);	// display source image in debug mode
+		}
 
 		// Update all cars
 		for (int i = 0; i < cars_all.size(); i++)
@@ -167,9 +167,10 @@ int main(int argc,char **argv)
 				cars_all[i].update_state(buf[0], buf[1], sys_conf.origin, sys_conf.scale, sys_conf.min_speed, sys_time);
 			}
 
-
-			cv:imshow("mask", masks_all[i]);
-			cv::waitKey(0);
+			if (output_mode == MODE_DEBUG) {
+				cv:imshow("mask", masks_all[i]);	// display each car's mask in debug mode
+				cv::waitKey(0);
+			}
 		}//for all cars
 		
 		// Outputs
@@ -179,9 +180,8 @@ int main(int argc,char **argv)
 		sys_time.old = sys_time.current;
 		for (int i = 0; i < cars_all.size(); i++)
 		{
-			cars_all[ii].state_new_to_old();
+			cars_all[i].state_new_to_old();
 		}
-		
 	}//for all frames
 	
 	
@@ -189,11 +189,12 @@ int main(int argc,char **argv)
 	* EXIT
 	******************************************************************************/
 	sys_time.end = cv::getTickCount();
-	sys_time.total = (sys_time.start - sys_time.end) / double (cv::getTickFrequency());
-	cout << endl;
-	cout << "Total time: " << sys_time.total <<" seconds"<<endl;
-	cout << "Total frames: " << n_frames <<endl;
-    cout << "Average processing speed: " << sys_time.total/n_frames*1000 << " ms/frame (" << n_frames/sys_time.total<< " fps)" <<endl;
+	sys_time.total = (sys_time.end - sys_time.start) / double (cv::getTickFrequency());
+	printf("\n");
+	std::cout << "Total time:        " << sys_time.total << " seconds" << std::endl;
+	std::cout << "Total frames:      " << n_frames << std::endl;
+	std::cout << "Processing time:   " << sys_time.total/n_frames*1000 << " ms/frame" << std::endl;
+	std::cout << "Frames per second: " << n_frames/sys_time.total << std::endl;
 	
 	Camera.release();
 	

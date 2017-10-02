@@ -49,7 +49,7 @@ struct Config
 * Reads and parses general and vehicle-specific configuration data from config.txt,
 * storing it in a Config struct and one or more Car structs as required
 * 
-* cars_all	Vector for storing one or more Car structs populated with config data
+* cars_all	Vector for storing one or more Car structs
 * sys_conf	Config struct for storing global configuration parameters
 *
 * return: 0 on success, 1 on failure
@@ -80,5 +80,6 @@ void show_config(std::vector<struct Car> &cars_all, Config &sys_conf);
 * return: void
 **********************************************************************************/
 void get_cropping_mask(struct Config sys_conf, cv::Mat &crop_mask);
+
 
 #endif

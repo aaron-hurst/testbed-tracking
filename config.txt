@@ -8,15 +8,15 @@ crop_l 		18
 crop_r 		18
 crop_t 		18
 crop_b 		18
-min_sat     30
-min_val     30
+min_sat     35
+min_val     35
 origin_x	16
 origin_y	5
 scale		1.9302
 min_speed	25
 shutter		3.03
-size_min    250
-size_max    600
+size_min    180
+size_max    700
 
 Car         Y
 name 		orange-89
@@ -32,28 +32,28 @@ hue 		170
 delta 		7
 END
 
-Car         N
+Car         Y
 name 		blue-5
 MAC_add		00:06:66:61:A6:CD
 hue 		99
-delta 		10
-END
-
-Car         N
-name 		pink-10
-MAC_add		00:06:66:47:0A:0A
-hue 		153
 delta 		9
 END
 
-Car         N
-name 		yellow-47
-MAC_add		00:06:66:61:9E:F7
-hue 		24
-delta 		10
+Car         Y
+name 		pink-10
+MAC_add		00:06:66:47:0A:0A
+hue 		149
+delta 		13
 END
 
-Car         N
+Car         Y
+name 		yellow-47
+MAC_add		00:06:66:61:9E:F7
+hue 		26
+delta 		12
+END
+
+Car         Y
 name 		green-5
 MAC_add		00:06:66:61:A9:3D
 hue 		49

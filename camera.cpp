@@ -30,7 +30,7 @@
 #define SHUTTER_MAX         4
 #define SHUTTER_DEFAULT     3.03
 #define SHUTTER_INC         0.1
-#define SHUTTER_EXTRA       0.7
+#define SHUTTER_EXTRA       0.4
 
 
 
@@ -70,6 +70,10 @@ int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_
 	sys_conf.shutter = SHUTTER_MIN;
 	while (px_matched > n_cars*sys_conf.car_size_max || px_matched < n_cars*sys_conf.car_size_min)
 	{
+		// Increment shutter speed and update px_matched_old
+		sys_conf.shutter += SHUTTER_INC;
+		px_matched_old = px_matched;
+		
 		// Set up camera and get image
 		cam_set(Camera, sys_conf);
 		usleep(70000);
@@ -102,10 +106,6 @@ int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_
 			printf("Shutter:  %1.2f    matched pixels:  %5d\n", sys_conf.shutter, px_matched);
 		}
 
-		// Increment shutter speed and update px_matched_old
-		sys_conf.shutter += SHUTTER_INC;
-		px_matched_old = px_matched;
-		
 		// Terminate when maximum shutter period is reached
 		if (sys_conf.shutter > SHUTTER_MAX)
 		{

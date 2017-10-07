@@ -144,7 +144,7 @@ int main(int argc,char **argv)
 		cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);	// convert to HSV
 		
 		if (output_mode == MODE_DEBUG) {
-			imshow("source", img);	// display source image in debug mode
+			cv::imshow("source", img);	// display source image in debug mode
 		}
 
 		// Update all cars
@@ -164,7 +164,7 @@ int main(int argc,char **argv)
 			}
 
 			if (output_mode == MODE_DEBUG) {
-				cv:imshow("mask", masks_all[i]);	// display each car's mask in debug mode
+				cv::imshow("mask", masks_all[i]);	// display each car's mask in debug mode
 				cv::waitKey(0);
 			}
 		}//for all cars

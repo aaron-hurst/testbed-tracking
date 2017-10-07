@@ -26,11 +26,11 @@
 #define IMG_SATURATION		50
 #define IMG_GAIN			50
 
-#define SHUTTER_MIN         1.5
+#define SHUTTER_MIN         1.6
 #define SHUTTER_MAX         4
 #define SHUTTER_DEFAULT     3.03
 #define SHUTTER_INC         0.1
-#define SHUTTER_EXTRA       0.5
+#define SHUTTER_EXTRA       0.7
 
 
 
@@ -96,27 +96,29 @@ int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_
 			break;
 		}
 		
-		// Increment shutter speed and update px_matched_old
-		sys_conf.shutter += SHUTTER_INC;
-		px_matched_old = px_matched;
-		
 		// Printf output if in debug mode
 		if (debug == 1)
 		{
 			printf("Shutter:  %1.2f    matched pixels:  %5d\n", sys_conf.shutter, px_matched);
 		}
+
+		// Increment shutter speed and update px_matched_old
+		sys_conf.shutter += SHUTTER_INC;
+		px_matched_old = px_matched;
 		
 		// Terminate when maximum shutter period is reached
 		if (sys_conf.shutter > SHUTTER_MAX)
 		{
 			printf("ERROR: Camera Auto Initialisation. Setting default shutter period of %1.2f ms.\n", 3.3*SHUTTER_DEFAULT);
+			sys_conf.shutter = SHUTTER_DEFAULT;
 			return FAIL;
 		}
 	}
 	
 	// Increment shutter period slightly beyond measured threshold and impose a lower limit
 	sys_conf.shutter += SHUTTER_EXTRA;
-    
+	cam_set(Camera, sys_conf);
+	
     // Print output
 	printf("\n==================================\n");
 	printf("Auto shutter:     %1.2f (%1.2f ms)\n", sys_conf.shutter, 3.3*sys_conf.shutter);

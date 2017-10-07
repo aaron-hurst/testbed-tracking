@@ -30,7 +30,7 @@
 #define SHUTTER_MAX         4
 #define SHUTTER_DEFAULT     3.03
 #define SHUTTER_INC         0.1
-#define SHUTTER_EXTRA       0.4
+#define SHUTTER_EXTRA       0.5
 
 
 

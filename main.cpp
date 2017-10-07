@@ -186,11 +186,12 @@ int main(int argc,char **argv)
 	******************************************************************************/
 	sys_time.end = cv::getTickCount();
 	sys_time.total = (sys_time.end - sys_time.start) / double (cv::getTickFrequency());
+	std::cout << "======================================================================" << std::endl;
 	printf("\n");
-	std::cout << "Total time:        " << sys_time.total << " seconds" << std::endl;
-	std::cout << "Total frames:      " << n_frames << std::endl;
-	std::cout << "Processing time:   " << sys_time.total/n_frames*1000 << " ms/frame" << std::endl;
-	std::cout << "Frames per second: " << n_frames/sys_time.total << std::endl;
+	printf("Tracking duration: %-5.3f seconds\n", sys_time.total);
+	printf("Total frames:      %d\n", n_frames);
+	printf("Time per frame:    %-3.1f ms/frame\n", sys_time.total/n_frames*1000);
+	printf("FPS:               %-2.2f\n", n_frames/sys_time.total);
 	
 	Camera.release();
 	

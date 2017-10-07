@@ -185,7 +185,7 @@ int send_json(std::vector<struct Car> cars_all, int sock, bool debug)
 
 int write_console(std::vector<struct Car> cars_all, int frame)
 {
-    std::cout << "===================================" << std::endl;
+    std::cout << "========================================================================" << std::endl;
     std::cout << "FRAME: " << frame << std::endl;
     for (int i = 0; i < cars_all.size(); i++)
     {		
@@ -199,7 +199,7 @@ int write_console(std::vector<struct Car> cars_all, int frame)
         }
         else
         {
-            printf(" - not detected\n");
+            printf(" - NOT DETECTED\n");
         }
 	}
 	

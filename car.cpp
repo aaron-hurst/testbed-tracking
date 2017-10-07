@@ -1,4 +1,5 @@
-#include <math.h>	// sqrt, atan2, pow
+#include <math.h>				// sqrt, atan2, pow
+#include <opencv2/opencv.hpp>	// cv::getTickFrequency()
 #include "car.h"
 #include "time.h"
 
@@ -27,14 +28,12 @@ void Car::update_state(float px_x, float px_y, int origin[2], float scale, int m
 	position_new[1] = scale*(px_y - origin[1]);
 	
 	// Update velocity
-	if (Car::found_old)
-	{
+	if (found_old) {
 		// Calculate velocity based on previous instance's values
-		velocity_new[0] = (position_new[0] - position_old[0])/(sys_time.current - sys_time.old);
-		velocity_new[1] = (position_new[1] - position_old[1])/(sys_time.current - sys_time.old);
+		velocity_new[0] = (position_new[0] - position_old[0])/(sys_time.current - sys_time.old)*(cv::getTickFrequency());
+		velocity_new[1] = (position_new[1] - position_old[1])/(sys_time.current - sys_time.old)*(cv::getTickFrequency());
 	}
-	else
-	{
+	else {
 		// No data on previous position, set velocity to zero
 		velocity_new[0] = 0.0;
 		velocity_new[1] = 0.0;

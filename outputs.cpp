@@ -185,12 +185,11 @@ int send_json(std::vector<struct Car> cars_all, int sock, bool debug)
 
 int write_console(std::vector<struct Car> cars_all, int frame)
 {
-    std::cout << "======================================================================" << std::endl;
+    std::cout << "=========================================================================" << std::endl;
     std::cout << "FRAME: " << frame << std::endl;
     for (int i = 0; i < cars_all.size(); i++)
     {		
-		//cout<< "Car: " << cars_all[i].name;
-		printf("Car: %-7s", cars_all[i].name.c_str());	// convert to a c string and pad to 10 characters
+		printf("Car: %-10s", cars_all[i].name.c_str());	// convert to a c string and pad to 10 characters
         if (cars_all[i].found)
         {
             printf(" - (%6.1f, %6.1f) mm,", cars_all[i].position_new[0], cars_all[i].position_new[1]);

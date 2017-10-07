@@ -186,7 +186,7 @@ int main(int argc,char **argv)
 	******************************************************************************/
 	sys_time.end = cv::getTickCount();
 	sys_time.total = (sys_time.end - sys_time.start) / double (cv::getTickFrequency());
-	std::cout << "======================================================================" << std::endl;
+    std::cout << "=========================================================================" << std::endl;
 	printf("\n");
 	printf("Tracking duration: %-5.3f seconds\n", sys_time.total);
 	printf("Total frames:      %d\n", n_frames);

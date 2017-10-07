@@ -15,7 +15,7 @@
 int set_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 {
 	// Declare variables
-	std::string line, name, link, value;
+	std::string line, name, /*link, */value, tmp;
 	Car car_dummy;
 	
 	// Open and check config file
@@ -30,12 +30,13 @@ int set_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 	while (getline(conf_file, line))	// get the next line of the file
 	{
 		std::istringstream line_stream(line);		// send line to an istringstream
-		line_stream >> name >> link;				// extract information
-		//std::cout << "name: " << name << std::endl;
-
-		// Skip invalid lines and comments
-		if (line_stream.fail() || link != "=" || name[0] == '#')	continue;
+		line_stream >> name/* >> link*/;				// extract information
 		
+		// Skip invalid lines and comments
+		if (line_stream.fail() || /*link != "=" || */name[0] == '#')	continue;
+		
+		//std::cout << "name: " << name;
+
 		// Global parameters
 		if 		(name == "crop_l")		line_stream >> sys_conf.crop_l;
 		else if (name == "crop_r")		line_stream >> sys_conf.crop_r;
@@ -56,24 +57,28 @@ int set_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 		// Cars: enter a second while loop to populate a dummy struct which is then pushed to the cars_all vector
 		if (name == "Car")
 		{
-			while (getline(conf_file, line))		// get next line
+			line_stream >> tmp;
+			if (tmp == "Y")		// only parse car if specified as "Y" (skip if "N")
 			{
-				std::istringstream line_stream(line);
-				line_stream >> name >> link;
-				//std::cout << "name: " << name << std::endl;
-				
-				// Skip invalid lines
-				if (line_stream.fail() || link != "=" || name[0] == '#') continue;
-				
-				// Car parameters
-				if 		(name == "name")		line_stream >> car_dummy.name;
-				else if (name == "MAC_add")		line_stream >> car_dummy.mac_add;
-				else if (name == "hue")			line_stream >> car_dummy.hue;
-				else if (name == "delta")		line_stream >> car_dummy.delta;
-				else if (name == "end")	// signifies end of car config parameters
-				{					
-					cars_all.push_back(car_dummy);	// store newly configured car into cars_all vector
-					break;							// exit car config while loop
+				while (getline(conf_file, line))		// get next line
+				{
+					std::istringstream line_stream(line);
+					line_stream >> name/* >> link*/;
+					//std::cout << "name: " << name << std::endl;
+					
+					// Skip invalid lines
+					if (line_stream.fail() ||/* link != "=" ||*/ name[0] == '#') continue;
+					
+					// Car parameters
+					if 		(name == "name")		line_stream >> car_dummy.name;
+					else if (name == "MAC_add")		line_stream >> car_dummy.mac_add;
+					else if (name == "hue")			line_stream >> car_dummy.hue;
+					else if (name == "delta")		line_stream >> car_dummy.delta;
+					else if (name == "END")	// signifies end of car config parameters
+					{					
+						cars_all.push_back(car_dummy);	// store newly configured car into cars_all vector
+						break;							// exit car config while loop
+					}
 				}
 			}
 		}

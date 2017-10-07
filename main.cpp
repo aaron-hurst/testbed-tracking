@@ -192,6 +192,7 @@ int main(int argc,char **argv)
 	printf("Total frames:      %d\n", n_frames);
 	printf("Time per frame:    %-3.1f ms/frame\n", sys_time.total/n_frames*1000);
 	printf("FPS:               %-2.2f\n", n_frames/sys_time.total);
+	printf("\n");
 	
 	Camera.release();
 	

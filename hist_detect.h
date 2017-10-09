@@ -17,32 +17,42 @@ struct Hist_data {
 };
 
 
-void hist_detect_flush(/*vector of calculated histogram arrays*/);
 
-
-void hist_detect_init(void);
-
-
-
-int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
-    std::vector<std::vector<cv::Point>> contours,
-    std::vector<struct Hist_data> hist_calc,
-    struct Config sys_conf, bool debug);
-
-
-int hist_detect_compare();
+/**********************************************************************************
+ * Initialise prototype histograms for each car in use
+ * 
+ * 
+ */
+void hist_std_init(/*vector for prototype histograms*/);
 
 
 /**********************************************************************************
-* Single Hue Detection
-* 
-* ... does not edit the car... returns values via a buffer.. set buffer to all zeros at start and no not change if not found
-* 
-* ...
-*
-* return: 0 on success (found), 1 on failure (not found)
-**********************************************************************************/
+ * Calculate histograms over contours detected in a source HSV image
+ * 
+ * 
+ */
+int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
+    std::vector<std::vector<cv::Point>> &contours,
+    std::vector<struct Hist_data> &hist_calc,
+    struct Config sys_conf, bool debug);
 
 
 
-#endif
+float hist_compare(struct Hist_data hist1, struct Hist_data hist2);
+
+
+
+int hist_detect(
+    /* car
+     * contours vector for finding position
+     * calculated histogram vector
+     * prototype histogram vector
+     * config for required match quality
+     * */
+);
+
+
+
+
+
+#endif /*CARSCV_HIST_DETECT_H*/

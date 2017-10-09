@@ -49,6 +49,7 @@ int main(int argc,char **argv)
 	// Variables
 	//-----------------------------------------------------------------------------
 	int n_frames, output_mode, delay;	// arguments
+	bool debug;							// debug parameter passed to functions
 	int ret;							// function return value
 	float buf[5];						// buffer passed to detection algorithm
 	int sock;							// network socket
@@ -59,9 +60,9 @@ int main(int argc,char **argv)
 	std::vector<cv::Mat> masks_all;		// store masks for each car
 	cv::Mat img, img_hsv, crop_mask;	// images
 
-	std::vector<Hist_data> hist_std;
-	std::vector<Hist_data> hist_calc;
-	std::vector<std::vector<cv::Point>> contours;
+	std::vector<Hist_data> hist_std;	// standard (prototype) histograms from config
+	std::vector<Hist_data> hist_calc;	// calculated histograms in each frame
+	std::vector<std::vector<cv::Point>> contours;	// contours calculated in each frame
 
 	//-----------------------------------------------------------------------------
 	// Arguments
@@ -72,6 +73,9 @@ int main(int argc,char **argv)
 	
 	// Check and print output mode to the console
 	output_mode = output_mode_set(output_mode);
+	if (output_mode == MODE_DEBUG) {
+		debug = true;
+	}
 	
 	//-----------------------------------------------------------------------------
 	// Config
@@ -118,10 +122,7 @@ int main(int argc,char **argv)
 	sleep(2);	// wait for camera to "warm up"
 	
 	// Initialise camera
-	if (output_mode == MODE_DEBUG)
-		cam_auto_init(Camera, sys_conf, cars_all.size(), crop_mask, 1);
-	else
-		cam_auto_init(Camera, sys_conf, cars_all.size(), crop_mask, 0);
+	cam_auto_init(Camera, sys_conf, cars_all.size(), crop_mask, debug);
 	
 	//-----------------------------------------------------------------------------
 	// Outputs
@@ -148,11 +149,11 @@ int main(int argc,char **argv)
 		sys_time.current = cv::getTickCount();	// current time
 		cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);	// convert to HSV
 		
-		if (output_mode == MODE_DEBUG) {
+		if (debug) {
 			cv::imshow("source", img);	// display source image in debug mode
 		}
 
-		hist_detect_calc(img_hsv, crop_mask, contours, hist_calc, sys_conf, true);
+		hist_detect_calc(img_hsv, crop_mask, contours, hist_calc, sys_conf, debug);
 
 		/*
 		// Update all cars

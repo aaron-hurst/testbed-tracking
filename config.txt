@@ -1,4 +1,4 @@
-# Config file for Autonomous Vehicle Model
+# Config file for testbed computer vision/ehicle tracking program
 # Any line beginning with "#" is treated as a comment and ignored
 
 # Global parameters
@@ -8,8 +8,8 @@ crop_l 		18
 crop_r 		18
 crop_t 		18
 crop_b 		18
-min_sat     35
-min_val     35
+min_sat     25
+min_val     25
 origin_x	16
 origin_y	5
 scale		1.9302
@@ -21,8 +21,8 @@ size_max    700
 Car         Y
 name 		orange-89
 MAC_add		00:06:66:61:A9:59
-hue 		7
-delta 		7
+hue 		6
+delta 		6
 END
 
 Car         Y
@@ -39,22 +39,22 @@ hue 		99
 delta 		9
 END
 
-Car         Y
+Car         N
 name 		pink-10
 MAC_add		00:06:66:47:0A:0A
 hue 		149
 delta 		13
 END
 
-Car         Y
+Car         N
 name 		yellow-47
 MAC_add		00:06:66:61:9E:F7
 hue 		26
 delta 		12
 END
 
-Car         Y
-name 		green-5
+Car         N
+name 		green-61
 MAC_add		00:06:66:61:A9:3D
 hue 		49
 delta 		10

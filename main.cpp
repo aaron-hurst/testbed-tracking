@@ -28,6 +28,7 @@
 #include "car.h"
 #include "time.h"
 #include "sh_detect.h"
+#include "hist_detect.h"
 
 /**********************************************************************************
 * MACROS
@@ -57,7 +58,11 @@ int main(int argc,char **argv)
 	std::vector<Car> cars_all;			// store car structs
 	std::vector<cv::Mat> masks_all;		// store masks for each car
 	cv::Mat img, img_hsv, crop_mask;	// images
-	
+
+	std::vector<Hist_data> hist_std;
+	std::vector<Hist_data> hist_calc;
+	std::vector<std::vector<cv::Point>> contours;
+
 	//-----------------------------------------------------------------------------
 	// Arguments
 	//-----------------------------------------------------------------------------
@@ -147,6 +152,9 @@ int main(int argc,char **argv)
 			cv::imshow("source", img);	// display source image in debug mode
 		}
 
+		hist_detect_calc(img_hsv, crop_mask, contours, hist_calc, sys_conf, true);
+
+		/*
 		// Update all cars
 		for (int i = 0; i < cars_all.size(); i++)
 		{
@@ -178,6 +186,7 @@ int main(int argc,char **argv)
 		{
 			cars_all[i].state_new_to_old();
 		}
+		*/
 	}//for all frames
 	
 	

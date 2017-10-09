@@ -21,8 +21,8 @@ size_max    700
 Car         Y
 name 		orange-89
 MAC_add		00:06:66:61:A9:59
-hue 		7
-delta 		7
+hue 		6
+delta 		6
 END
 
 Car         Y
@@ -54,7 +54,7 @@ delta 		12
 END
 
 Car         Y
-name 		green-5
+name 		green-61
 MAC_add		00:06:66:61:A9:3D
 hue 		49
 delta 		10

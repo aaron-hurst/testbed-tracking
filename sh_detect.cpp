@@ -29,10 +29,8 @@ int sh_detect(cv::Mat img_hsv, cv::Mat crop_mask, cv::Mat &mask, struct Car car,
 
 	// Hue-matching mask
 	cv::inRange(img_hsv, cv::Scalar(car.hue - car.delta, sys_conf.min_sat, sys_conf.min_val), cv::Scalar(car.hue + car.delta, 255, 255), mask);
-	//cv::inRange(img_hsv, cv::Scalar(sys_conf.min_sat, car.hue - car.delta, sys_conf.min_val), cv::Scalar(255, car.hue + car.delta, 255), mask);
-	//cv::inRange(img_hsv, cv::Scalar(sys_conf.min_sat, sys_conf.min_val, car.hue - car.delta), cv::Scalar(255, 255, car.hue + car.delta), mask);
 	mask = mask & crop_mask;
-	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), DILATION_ITER);	// 3x3 dilattion
+	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), DILATION_ITER);	// 3x3 dilation
 
 	cv::Mat mask_use = cv::Mat::zeros(mask.rows, mask.cols, CV_8UC1);
 	mask.copyTo(mask_use);	// copy mask since will be modified by findContours
@@ -76,9 +74,9 @@ int sh_detect(cv::Mat img_hsv, cv::Mat crop_mask, cv::Mat &mask, struct Car car,
 
 	// Save outputs in buffer
 	mu = cv::moments(contours[idx], true);	// calculate moment of car's contour		
-	buf[0] = mu.m10 / mu.m00;			// x-position of car in pixels
-	buf[1] = mu.m01 / mu.m00;			// y-position of car in pixels
-	buf[2] = contour_area_max;			// area of car's contour
+	buf[0] = mu.m10 / mu.m00;				// x-position of car in pixels
+	buf[1] = mu.m01 / mu.m00;				// y-position of car in pixels
+	buf[2] = contour_area_max;				// area of car's contour
 	
 	return SUCCESS;
 }

@@ -16,9 +16,9 @@
 
 
 
-void hist_std_init(void)
+int hist_std_init(std::vector<struct Hist_data> &hist_std)
 {
-
+	return SUCCESS;
 }
 
 
@@ -26,7 +26,7 @@ void hist_std_init(void)
 int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
 	std::vector<std::vector<cv::Point>> &contours,
 	std::vector<struct Hist_data> &hist_calc,
-	struct Config sys_conf, bool debug)
+	struct Config sys_conf, int frame, bool debug)
 {
 	/*Variables*/
 	cv::Mat mask = cv::Mat::zeros(img_hsv.rows, img_hsv.cols, CV_8UC1);
@@ -58,8 +58,8 @@ int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
 		if (contour_area > sys_conf.car_size_min && contour_area < sys_conf.car_size_max) {
 			/*Generate contour mask*/
 			mask_ctr = cv::Mat::zeros(img_hsv.rows, img_hsv.cols, CV_8UC1);
+			cv::drawContours(mask_ctr, contours, i, cv::Scalar(255, 255, 255), CV_FILLED, 8);
 			if (debug) {
-				cv::drawContours(mask_ctr, contours, i, cv::Scalar(255, 255, 255), CV_FILLED, 8);
 				imshow("mask_ctr", mask_ctr);
 				cv::waitKey(0);
 			}
@@ -100,34 +100,42 @@ int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
 		}
 	}
 
+	/*Write histogram to log file*/
+	FILE * hist_log;
+	hist_log = fopen("hist_log.csv","a");
+	for (int i = 0; i < hist_calc.size(); i++) {
+		fprintf(hist_log, "%4d,", frame);
+		for (int j = 0; j < N_BINS; j++) {
+			fprintf(hist_log, "%1.2f,", hist_calc[i].histogram[j]);
+		}
+		fprintf(hist_log, "\n");
+	}
+	fclose(hist_log);
+
 	return SUCCESS;
 }
 
 
-float hist_compare(struct Hist_data hist1, struct Hist_data hist2)
+float hist_compare(struct Hist_data hist1, struct Hist_data hist2, int len)
 {
-
+	return 0.1;
 }
 
-int hist_detect(
-    /* car number (index in cars_all)
-     * contours vector for finding position
-     * calculated histogram vector
-     * prototype histogram vector
-     * minimum quality
-	 * buffer
-	 * 
-	 * do not pass any by reference - don't need to change any of them
-     * */
-)
+
+int hist_detect(int car_idx, int min_quality,
+	std::vector<std::vector<cv::Point>> contours,
+	std::vector<struct Hist_data> hist_calc,
+	std::vector<struct Hist_data> hist_std,
+	float buf[])
 {
+	
 	float match_quality = 0, best_match = 0;
 	int best_idx = -1;
 
 	/*Compare calculated histograms with standard histogram for given car*/
-	for (int i = 0; i < hist_calculated.size(); i++) {
+	for (int i = 0; i < hist_calc.size(); i++) {
 		if (1/*calculated histogram not already associated with a car*/) {
-			match_quality = hist_compare(hist_calculated[i], hist_std[car]);
+			match_quality = hist_compare(hist_calc[i], hist_std[car_idx], N_BINS);
 			if (match_quality > best_match) {
 				best_match = match_quality;
 				best_idx = i;
@@ -137,6 +145,7 @@ int hist_detect(
 
 	if (best_match > min_quality) {
 		/*Calculate car position*/
+		//TODO: position calculated from contours
 
 		/*Store position and diagnostic data in buffer*/
 

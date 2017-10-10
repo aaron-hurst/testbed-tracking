@@ -9,6 +9,9 @@
 struct Config;
 
 
+/**********************************************************************************
+ * @brief Histogram data structure
+ */
 struct Hist_data {
     float histogram [N_BINS];   // calculated or prototype histogram
     int contour_idx;            // index of contours over which the histogram was calculated
@@ -16,40 +19,41 @@ struct Hist_data {
     int area;                   // area of mask used to calculate this (-1 for prototype histograms?)
 };
 
-
-
 /**********************************************************************************
- * Initialise prototype histograms for each car in use
+ * @brief Initialise prototype histograms for each car in use
  * 
  * 
  */
-void hist_std_init(/*vector for prototype histograms*/);
-
+int hist_std_init(std::vector<struct Hist_data> &hist_std);
 
 /**********************************************************************************
- * Calculate histograms over contours detected in a source HSV image
+ * @brief Calculate histograms over contours detected in a source HSV image
  * 
  * 
  */
 int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
     std::vector<std::vector<cv::Point>> &contours,
     std::vector<struct Hist_data> &hist_calc,
-    struct Config sys_conf, bool debug);
+    struct Config sys_conf, int frame, bool debug);
+
+/**********************************************************************************
+ * @brief Compares two histograms provided as arrays of fixed length
+ * 
+ * 
+ */
+float hist_compare(struct Hist_data hist1, struct Hist_data hist2, int len);
 
 
-
-float hist_compare(struct Hist_data hist1, struct Hist_data hist2);
-
-
-
-int hist_detect(
-    /* car
-     * contours vector for finding position
-     * calculated histogram vector
-     * prototype histogram vector
-     * config for required match quality
-     * */
-);
+/**********************************************************************************
+ * @brief Applies histogram comparison to detect and locate known vehicles
+ * 
+ * 
+ */
+int hist_detect(int car_idx, int min_quality,
+	std::vector<std::vector<cv::Point>> contours,
+	std::vector<struct Hist_data> hist_calc,
+	std::vector<struct Hist_data> hist_std,
+	float buf[]);
 
 
 

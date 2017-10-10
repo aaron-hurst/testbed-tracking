@@ -90,7 +90,7 @@ int main(int argc,char **argv)
 	}
 	
 	// Print config in debug mode
-	if (output_mode == MODE_DEBUG) {
+	if (debug) {
 		show_config(cars_all, sys_conf);
 	}
 	
@@ -141,6 +141,18 @@ int main(int argc,char **argv)
 	sys_time.start = cv::getTickCount();
 	sys_time.old = sys_time.start;
 
+	/*FOR TESTING*/
+	FILE * hist_log;
+	hist_log = fopen("hist_log.csv","w");
+	fprintf(hist_log,"Log of calculated histograms,\n");
+	fprintf(hist_log,"frame,");
+	for (int i = 0; i < N_BINS; i++) {
+		fprintf(hist_log, "%3d,", 5+i*BIN_WIDTH);
+	}
+	fprintf(hist_log,"\n");
+	fclose(hist_log);
+	/*END OF TESTING CODE*/
+
 	for (int frame = 0; frame < n_frames; frame++)
 	{
 		// Get image
@@ -153,7 +165,7 @@ int main(int argc,char **argv)
 			cv::imshow("source", img);	// display source image in debug mode
 		}
 
-		hist_detect_calc(img_hsv, crop_mask, contours, hist_calc, sys_conf, debug);
+		hist_detect_calc(img_hsv, crop_mask, contours, hist_calc, sys_conf, frame, debug);
 
 		/*
 		// Update all cars

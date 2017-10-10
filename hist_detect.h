@@ -24,7 +24,7 @@ struct Hist_data {
  * 
  * 
  */
-int hist_std_init(std::vector<struct Hist_data> &hist_std);
+int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_add, int car_idx);
 
 /**********************************************************************************
  * @brief Calculate histograms over contours detected in a source HSV image

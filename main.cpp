@@ -82,8 +82,7 @@ int main(int argc,char **argv)
 	//-----------------------------------------------------------------------------
 	// Load and set system and car configuration parameters
 	ret = set_config(cars_all, sys_conf);
-	if (ret)
-	{
+	if (ret) {
 		std::cout << "ERROR CRITICAL: parsing configuration file failed" << std::endl;
 		ret = 0;
 		return FAIL;
@@ -93,7 +92,30 @@ int main(int argc,char **argv)
 	if (debug) {
 		show_config(cars_all, sys_conf);
 	}
-	
+
+	/*Load standard histogram data*/
+	hist_std.clear();
+	for (int i = 0; i < cars_all.size(); i++) {
+		ret = hist_std_init(hist_std, cars_all[i].mac_add, i);
+		if (ret) {
+			std::cout << "ERROR CRITICAL: parsing standard histogram file failed" << std::endl;
+			ret = 0;
+			return FAIL;
+		}
+	}
+	/*Prinf standard histograms if in debug mode*/
+	if (debug) {
+		printf("STANDARD HISTOGRAMS:\n");
+		for (int i = 0; i < hist_std.size(); i++) {
+			printf("%-17s: ", cars_all[hist_std[i].car].mac_add.c_str());
+			for (int j = 0; j < N_BINS; j++) {
+				printf("%1.2f ", hist_std[i].histogram[j]);
+			}
+			printf("\n");
+		}
+	}
+	printf("\n");
+
 	// Initialise image matrices
 	img = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC3);
 	img_hsv = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC3);
@@ -103,8 +125,7 @@ int main(int argc,char **argv)
 	get_cropping_mask(sys_conf, crop_mask);
 	
 	// Initialise vector with masks for each car
-	for (int i = 0; i < cars_all.size(); i++)
-	{
+	for (int i = 0; i < cars_all.size(); i++) {
 		cv::Mat mask = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC1);
 		masks_all.push_back(mask);
 	}
@@ -140,17 +161,17 @@ int main(int argc,char **argv)
 	******************************************************************************/
 	sys_time.start = cv::getTickCount();
 	sys_time.old = sys_time.start;
-
+	
 	/*FOR TESTING*/
-	FILE * hist_log;
-	hist_log = fopen("hist_log.csv","w");
-	fprintf(hist_log,"Log of calculated histograms,\n");
-	fprintf(hist_log,"frame,");
-	for (int i = 0; i < N_BINS; i++) {
-		fprintf(hist_log, "%3d,", 5+i*BIN_WIDTH);
-	}
-	fprintf(hist_log,"\n");
-	fclose(hist_log);
+	// FILE * hist_log;
+	// hist_log = fopen("hist_log.csv","w");
+	// fprintf(hist_log,"Log of calculated histograms,\n");
+	// fprintf(hist_log,"%d,",n_frames);
+	// for (int i = 0; i < N_BINS; i++) {
+	// 	fprintf(hist_log, "%d,", 5+i*BIN_WIDTH);
+	// }
+	// fprintf(hist_log,"\n");
+	// fclose(hist_log);
 	/*END OF TESTING CODE*/
 
 	for (int frame = 0; frame < n_frames; frame++)
@@ -165,7 +186,7 @@ int main(int argc,char **argv)
 			cv::imshow("source", img);	// display source image in debug mode
 		}
 
-		hist_detect_calc(img_hsv, crop_mask, contours, hist_calc, sys_conf, frame, debug);
+		//hist_detect_calc(img_hsv, crop_mask, contours, hist_calc, sys_conf, frame, debug);
 
 		/*
 		// Update all cars

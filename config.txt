@@ -1,6 +1,9 @@
 # Config file for testbed computer vision/ehicle tracking program
 # Any line beginning with "#" is treated as a comment and ignored
 
+# Note 1: hue and delta values of -1 indicate car can only be detected
+# 		  using the histogram comparison method
+
 # Global parameters
 img_width   640
 img_height  480
@@ -18,21 +21,21 @@ shutter		3.03
 size_min    180
 size_max    700
 
-Car         Y
+Car         N
 name 		orange-89
 MAC_add		00:06:66:61:A9:59
 hue 		6
 delta 		6
 END
 
-Car         Y
+Car         N
 name 		red-72
 MAC_add		00:06:66:61:A3:48
 hue 		170
 delta 		7
 END
 
-Car         Y
+Car         N
 name 		blue-5
 MAC_add		00:06:66:61:A6:CD
 hue 		99
@@ -53,9 +56,30 @@ hue 		26
 delta 		12
 END
 
-Car         N
+Car         Y
 name 		green-61
 MAC_add		00:06:66:61:A9:3D
 hue 		49
 delta 		10
+END
+
+Car         Y
+name 		red-7
+MAC_add		red-7
+hue 		-1
+delta 		-1
+END
+
+Car         Y
+name 		red-20
+MAC_add		red-20
+hue 		-1
+delta 		-1
+END
+
+Car         Y
+name 		red-37
+MAC_add		red-37
+hue 		-1
+delta 		-1
 END

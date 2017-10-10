@@ -1,4 +1,7 @@
 #include <vector>		// vector
+#include <iostream>
+#include <sstream>
+#include <string>
 
 // OpenCV includes
 #include <opencv2/opencv.hpp>
@@ -16,8 +19,46 @@
 
 
 
-int hist_std_init(std::vector<struct Hist_data> &hist_std)
+int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr, int car_idx)
 {
+	/*Variables*/
+	int idx = 0;
+	bool found = false;
+	std::string line, token;
+	struct Hist_data hist_tmp;
+	
+	/*Open histogram config file*/
+	std::ifstream hist_conf("hist_config.txt");
+	if (!hist_conf) {
+		std::cout << "Error: could not load histogram config file: hist_config.txt" << std::endl;
+		return FAIL;
+	}
+
+	/*Parse each line*/
+	while(std::getline(hist_conf, line)) {
+		std::istringstream ss(line);
+		/*get MAC address (first item on line) and compare to provided MAC address*/
+		std::getline(ss, token, ',');
+		if (mac_addr.compare(token) == 0/*std::strcmp(token, mac_addr*/) {
+			/*Matching entry found, store a new histogram*/
+			idx = 0;
+			while(std::getline(ss, token, ',')) {
+				hist_tmp.histogram[idx] = std::stof(token);
+				idx++;
+			}
+			hist_tmp.car = car_idx;
+			hist_tmp.contour_idx = -1;
+			hist_tmp.area = -1;
+			hist_std.push_back(hist_tmp);
+			found = true;
+		}
+	}
+
+	/*Return failure if no matching histogram was founc for given MAC address*/
+	if (!found) {
+		return FAIL;
+	}
+	
 	return SUCCESS;
 }
 
@@ -118,6 +159,10 @@ int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
 
 float hist_compare(struct Hist_data hist1, struct Hist_data hist2, int len)
 {
+	// for (int i = 0; i < len; i++) {
+
+	// }
+
 	return 0.1;
 }
 

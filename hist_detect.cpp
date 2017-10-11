@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <math.h>		// pow
 
 // OpenCV includes
 #include <opencv2/opencv.hpp>
@@ -17,7 +18,27 @@
 
 
 
+int hist_log_setup(int total_frames)
+{
+	/*Open file*/
+	FILE * hist_log;
+	hist_log = fopen("hist_log.csv","w");
+	if (hist_log == NULL) {
+		return FAIL;
+	}
 
+	/*Write file lines*/
+	fprintf(hist_log,"Log of calculated histograms,\n");
+	fprintf(hist_log,"%d,",total_frames);
+	for (int i = 0; i < N_BINS; i++) {
+		fprintf(hist_log, "%d,", 5+i*BIN_WIDTH);
+	}
+	fprintf(hist_log,"\n");
+
+	fclose(hist_log);
+
+	return SUCCESS;
+}
 
 int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr, int car_idx)
 {
@@ -40,7 +61,7 @@ int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr,
 		/*get MAC address (first item on line) and compare to provided MAC address*/
 		std::getline(ss, token, ',');
 		if (mac_addr.compare(token) == 0/*std::strcmp(token, mac_addr*/) {
-			/*Matching entry found, store a new histogram*/
+			/*Matching entry found, store a new histogram - multiple matching entries may be found for each car*/
 			idx = 0;
 			while(std::getline(ss, token, ',')) {
 				hist_tmp.histogram[idx] = std::stof(token);
@@ -54,7 +75,7 @@ int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr,
 		}
 	}
 
-	/*Return failure if no matching histogram was founc for given MAC address*/
+	/*Return failure if no matching histogram was found for the given MAC address*/
 	if (!found) {
 		return FAIL;
 	}
@@ -62,11 +83,10 @@ int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr,
 	return SUCCESS;
 }
 
-
-//TODO: check for erros, return FAILURE
+//TODO: error checking
 int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
 	std::vector<std::vector<cv::Point>> &contours,
-	std::vector<struct Hist_data> &hist_calc,
+	std::vector<struct Hist_data> &hists_calc,
 	struct Config sys_conf, int frame, bool debug)
 {
 	/*Variables*/
@@ -76,19 +96,19 @@ int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
 	float hue_range[] = {0, MAX_HUE};
 	const float* range[] = {hue_range};
 	int channel[] = {0};
-	cv::MatND hist_tmp;
-	struct Hist_data hist_data_tmp;
+	cv::MatND hist_tmp_mat;
+	struct Hist_data hist_tmp;
 	double max;
 	int contour_area;
 
 	/*Clear data vectors*/
 	contours.clear();
-	hist_calc.clear();
+	hists_calc.clear();
 
-	/*GLobal hue-matching mask*/
+	/*Global hue-matching mask*/
 	cv::inRange(img_hsv, cv::Scalar(0, sys_conf.min_sat, sys_conf.min_val), cv::Scalar(180, 255, 255), mask);
 	mask = mask & crop_mask;
-	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), DILATION_ITER);	// 3x3 dilation
+	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), DILATION_ITER); // 3x3 dilation
 
 	/*Find contours*/
 	cv::findContours(mask, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
@@ -101,102 +121,136 @@ int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
 			mask_ctr = cv::Mat::zeros(img_hsv.rows, img_hsv.cols, CV_8UC1);
 			cv::drawContours(mask_ctr, contours, i, cv::Scalar(255, 255, 255), CV_FILLED, 8);
 			if (debug) {
-				imshow("mask_ctr", mask_ctr);
+				imshow("Contour mask (hist_detect_calc)", mask_ctr);
 				cv::waitKey(0);
 			}
 			
 			/*Calculate histogram on contour mask*/
-			cv::calcHist(&img_hsv, 1, channel, mask_ctr, hist_tmp, 1, &hist_bins, range, true, false);
+			cv::calcHist(&img_hsv, 1, channel, mask_ctr, hist_tmp_mat, 1, &hist_bins, range, true, false);
 
 			/*Get maximum histogram value*/
-			cv::minMaxLoc(hist_tmp, NULL, &max, NULL, NULL);
+			cv::minMaxLoc(hist_tmp_mat, NULL, &max, NULL, NULL);
 
-			/*Normalise and copy histogram data to hist_data struct*/
-			for (int i = 0; i < hist_bins; i++) {
-				hist_data_tmp.histogram[i] = hist_tmp.at<float>(i) / max;
+			/*Normalise and copy histogram data to temporary hist struct*/
+			for (int j = 0; j < hist_bins; j++) {
+				hist_tmp.histogram[j] = hist_tmp_mat.at<float>(j) / max;
 			}
-			hist_data_tmp.area = contour_area;
-			hist_data_tmp.contour_idx = i;
+			hist_tmp.area = contour_area;
+			hist_tmp.contour_idx = i;
+			hist_tmp.car = -1;
 
-			/*Push hist_data_tmp to hist_calc vector*/
-			hist_calc.push_back(hist_data_tmp);
+			/*Push hist_tmp to hists_calc vector*/
+			hists_calc.push_back(hist_tmp);
 		}
 	}
-	
-	/*Print output in debug mode*/
+
+	/*Print histograms in debug mode*/
 	if (debug) {
-		printf("Number of vehicles found: %d\n", hist_calc.size());
-		printf("Histograms:\n");
-		printf("          ");
+		printf("Number of cars found: %d\n", hists_calc.size());
+		printf("             ");
 		for (int i = 0; i < N_BINS; i++) {
 			printf("%3d  ", 5+i*BIN_WIDTH);
 		}
 		printf("\n");
-		for (int i = 0; i < hist_calc.size(); i++) {
-			printf("Car %2d:  ", i+1);
+		for (int i = 0; i < hists_calc.size(); i++) {
+			printf("Object %2d:  ", i+1);
 			for (int j = 0; j < N_BINS; j++) {
-				printf("%1.2f ", hist_calc[i].histogram[j]);
-			}
+				printf("%1.2f ", hists_calc[i].histogram[j]);
+			} /*for each elemeent in histogram*/
 			printf("\n");
-		}
+		} /*for each histogram*/
 	}
 
 	/*Write histogram to log file*/
-	FILE * hist_log;
-	hist_log = fopen("hist_log.csv","a");
-	for (int i = 0; i < hist_calc.size(); i++) {
-		fprintf(hist_log, "%4d,", frame);
-		for (int j = 0; j < N_BINS; j++) {
-			fprintf(hist_log, "%1.2f,", hist_calc[i].histogram[j]);
+	if (debug) {
+		FILE * hist_log;
+		hist_log = fopen("hist_log.csv","a");
+		for (int i = 0; i < hists_calc.size(); i++) {
+			fprintf(hist_log, "%4d,", frame);
+			for (int j = 0; j < N_BINS; j++) {
+				fprintf(hist_log, "%1.2f,", hists_calc[i].histogram[j]);
+			}
+			fprintf(hist_log, "\n");
 		}
-		fprintf(hist_log, "\n");
+		fclose(hist_log);
 	}
-	fclose(hist_log);
 
 	return SUCCESS;
 }
 
 
-float hist_compare(struct Hist_data hist1, struct Hist_data hist2, int len)
+float hist_compare(float hist_std[], float hist_test[], int len, float min_hist_val)
 {
-	// for (int i = 0; i < len; i++) {
-
-	// }
-
-	return 0.1;
-}
-
-
-int hist_detect(int car_idx, int min_quality,
-	std::vector<std::vector<cv::Point>> contours,
-	std::vector<struct Hist_data> hist_calc,
-	std::vector<struct Hist_data> hist_std,
-	float buf[])
-{
-	
-	float match_quality = 0, best_match = 0;
-	int best_idx = -1;
-
-	/*Compare calculated histograms with standard histogram for given car*/
-	for (int i = 0; i < hist_calc.size(); i++) {
-		if (1/*calculated histogram not already associated with a car*/) {
-			match_quality = hist_compare(hist_calc[i], hist_std[car_idx], N_BINS);
-			if (match_quality > best_match) {
-				best_match = match_quality;
-				best_idx = i;
-			}
+	float diff = 0;
+	for (int i = 0; i < len; i++) {
+		if (hist_std[i] < min_hist_val) { /*standard histogram value too small for reasonable comparison*/
+			diff += pow(hist_test[i] - min_hist_val, 2) / min_hist_val;
+		}
+		else {
+			diff += pow(hist_test[i] - hist_std[i], 2) / hist_std[i];
 		}
 	}
 
-	if (best_match > min_quality) {
-		/*Calculate car position*/
-		//TODO: position calculated from contours
+	return diff;
+}
 
-		/*Store position and diagnostic data in buffer*/
+int hist_detect(int car_idx, float max_low, float max_high,
+	std::vector<std::vector<cv::Point>> contours,
+	std::vector<struct Hist_data> &hists_calc,
+	std::vector<struct Hist_data> hists_std,
+	float buf[],
+	bool debug)
+{
+	/*Variables*/
+	float hist_diff = 0, best_diff = 9999;
+	int best_calc_idx = -1, best_ctr_idx = -1, best_std;
+	int delta_diff;	/* difference between best and decond best difference value*/
+	cv::Moments mu;
 
+	/*Compare calculated histograms with standard histogram for given car*/
+	for (int i = 0; i < hists_std.size(); i++) {
+		if (hists_std[i].car == car_idx) { /*standard histogram corresponds to car of interest*/
+			for (int j = 0; j < hists_calc.size(); j++) {
+				if (hists_calc[j].car < 0) { /*calculated histogram not already associated with a car*/
+					/*Calculate modified chi-squared difference between histograms, print in debug mode*/
+					hist_diff = hist_compare(hists_std[i].histogram, hists_calc[j].histogram, N_BINS, 0.02);
+					if(debug) {
+						printf("%6.2f\n", hist_diff);
+					}
+					/*Check if current difference is best (smallest) yet*/
+					if (hist_diff < best_diff) {
+						delta_diff = best_diff - hist_diff;
+						best_diff = hist_diff;
+						best_calc_idx = j; /*best matching calculated histogram*/
+						best_std = i; /*best matching standard histogram*/
+					}
+				}
+			} /*for calculated histogram not already matched to a car*/
+		}
+	} /*for each standard histogram associated with car of interest*/
+
+	if (debug) {
+		printf("best_diff: %2.2f (std hist: %2d, calculated hist: %2d)\n", best_diff, best_std, best_calc_idx);
 	}
+
+	/*If best difference is small, or small enough and better than the next best, assign to car*/
+	if (best_diff < max_low || (best_diff < max_high && delta_diff > max_low)) {
+		/*Calculate car position and diagnostic data and store in buffer*/
+		best_ctr_idx = hists_calc[best_calc_idx].contour_idx;
+		mu = cv::moments(contours[best_ctr_idx], true);	/*calculate moment of car's contour*/
+		buf[0] = mu.m10 / mu.m00;			/*x-position of car in pixels*/
+		buf[1] = mu.m01 / mu.m00;			/*y-position of car in pixels*/
+		buf[2] = hists_calc[best_calc_idx].area;	/*area of car's contour*/
+		buf[3] = best_calc_idx;					/*index of matched histogram*/
+
+		/*Associate car with calculated histogram (so histogram is not re-compared)*/
+		hists_calc[best_calc_idx].car = car_idx;
+	}
+	/*Else, no suitable matching histogram found: set buffer to zero*/
 	else {
-		/*No suitable matching histogram found*/
+		for (int i = 0; i < 5; i++) {
+			buf[i] = 0;
+		}
 		return FAIL;
 	}
 

@@ -11,8 +11,8 @@ crop_l 		18
 crop_r 		18
 crop_t 		18
 crop_b 		18
-min_sat     25
-min_val     25
+min_sat     35
+min_val     35
 origin_x	16
 origin_y	5
 scale		1.9302
@@ -63,7 +63,7 @@ hue 		49
 delta 		10
 END
 
-Car         Y
+Car         N
 name 		red-7
 MAC_add		red-7
 hue 		-1

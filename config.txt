@@ -1,5 +1,16 @@
-# Config file for Autonomous Vehicle Model
+# Config file for testbed computer vision/ehicle tracking program
 # Any line beginning with "#" is treated as a comment and ignored
+
+# Note 1: Hue and delta values of -1 indicate car can only be detected
+# 		  using the histogram comparison method
+# Note 2: Good values for min_sat and min_val may vary depending on
+#         the conditions and detection mode used: (35,35) seems to
+#         generally work well for histogram detection, (30,30) or
+#         (25,25) works better for hue detection.
+
+# Type of detection/tracking desired
+# 0 --> single-hue detection; 1 --> histogram detection
+detect_mode 1
 
 # Global parameters
 img_width   640
@@ -18,35 +29,39 @@ shutter		3.03
 size_min    180
 size_max    700
 
-Car         Y
+# Histogram-based detection parameters
+max_diff_l  4
+max_diff_h  10
+
+Car         N
 name 		orange-89
 MAC_add		00:06:66:61:A9:59
 hue 		6
 delta 		6
 END
 
-Car         Y
+Car         N
 name 		red-72
 MAC_add		00:06:66:61:A3:48
 hue 		170
 delta 		7
 END
 
-Car         Y
+Car         N
 name 		blue-5
 MAC_add		00:06:66:61:A6:CD
 hue 		99
 delta 		9
 END
 
-Car         Y
+Car         N
 name 		pink-10
 MAC_add		00:06:66:47:0A:0A
 hue 		149
 delta 		13
 END
 
-Car         Y
+Car         N
 name 		yellow-47
 MAC_add		00:06:66:61:9E:F7
 hue 		26
@@ -58,4 +73,25 @@ name 		green-61
 MAC_add		00:06:66:61:A9:3D
 hue 		49
 delta 		10
+END
+
+Car         N
+name 		red-7
+MAC_add		red-7
+hue 		-1
+delta 		-1
+END
+
+Car         Y
+name 		red-20
+MAC_add		red-20
+hue 		-1
+delta 		-1
+END
+
+Car         Y
+name 		red-37
+MAC_add		red-37
+hue 		-1
+delta 		-1
 END

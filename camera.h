@@ -33,7 +33,7 @@ void cam_set(raspicam::RaspiCam_Cv &Camera, struct Config sys_conf);
  *
  * return: 0 on success, 1 on failure
  */
-int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_cars, cv::Mat crop_mask, int debug);
+int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf,int n_cars, cv::Mat crop_mask, bool debug);
 
 
 #endif

@@ -47,7 +47,7 @@ void cam_set(raspicam::RaspiCam_Cv &Camera, struct Config sys_conf)
 }
 
 
-int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_cars, cv::Mat crop_mask, int debug)
+int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_cars, cv::Mat crop_mask, bool debug)
 {
 	// Variables
     int px_matched, px_matched_old = 0;     // number of matched pixels
@@ -94,21 +94,18 @@ int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_
         // Terminate if current matched value is less than minimum car size AND was previously greater
         // than maximum car size (both multiplied by the number of cars)
 		// i.e. if it jumped from too many pixels to too few in a single increment
-		if (px_matched < n_cars*sys_conf.car_size_min && px_matched_old > n_cars*sys_conf.car_size_max)
-		{
+		if (px_matched < n_cars*sys_conf.car_size_min && px_matched_old > n_cars*sys_conf.car_size_max) {
 			printf("Special termination: jumped over accepted range\n");
 			break;
 		}
 		
 		// Printf output if in debug mode
-		if (debug == 1)
-		{
+		if (debug) {
 			printf("Shutter:  %1.2f    matched pixels:  %5d\n", sys_conf.shutter, px_matched);
 		}
 
 		// Terminate when maximum shutter period is reached
-		if (sys_conf.shutter > SHUTTER_MAX)
-		{
+		if (sys_conf.shutter > SHUTTER_MAX)	{
 			printf("ERROR: Camera Auto Initialisation. Setting default shutter period of %1.2f ms.\n", 3.3*SHUTTER_DEFAULT);
 			sys_conf.shutter = SHUTTER_DEFAULT;
 			return FAIL;

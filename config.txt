@@ -77,21 +77,21 @@ END
 
 Car         N
 name 		red-7
-MAC_add		red-7
+MAC_add		00:06:66:61:6B
 hue 		-1
 delta 		-1
 END
 
 Car         Y
 name 		red-20
-MAC_add		red-20
+MAC_add		00:06:66:61:AA:DC
 hue 		-1
 delta 		-1
 END
 
 Car         Y
 name 		red-37
-MAC_add		red-37
+MAC_add		00:06:66:61:9C:89
 hue 		-1
 delta 		-1
 END

@@ -13,6 +13,9 @@
 **********************************************************************************/
 struct Config
 {
+	// Detection mode
+	int detect_mode;
+	
 	// Shutter duration
 	float shutter;
 	
@@ -37,6 +40,10 @@ struct Config
 	// General vehicle properties
 	int car_size_max;
 	int car_size_min;
+
+	// Histogram-based detection parameters
+	int hist_diff_max_low;
+	int hist_diff_max_high;
 	
 	// State estimation parameters
 	int min_speed;

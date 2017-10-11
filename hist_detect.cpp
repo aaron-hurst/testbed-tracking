@@ -215,7 +215,7 @@ int hist_detect(int car_idx, float max_low, float max_high,
 					/*Calculate modified chi-squared difference between histograms, print in debug mode*/
 					hist_diff = hist_compare(hists_std[i].histogram, hists_calc[j].histogram, N_BINS, 0.02);
 					if(debug) {
-						printf("%6.2f\n", hist_diff);
+						printf("Car %2d:  %6.2f\n", car_idx, hist_diff);
 					}
 					/*Check if current difference is best (smallest) yet*/
 					if (hist_diff < best_diff) {
@@ -230,7 +230,7 @@ int hist_detect(int car_idx, float max_low, float max_high,
 	} /*for each standard histogram associated with car of interest*/
 
 	if (debug) {
-		printf("best_diff: %2.2f (std hist: %2d, calculated hist: %2d)\n", best_diff, best_std, best_calc_idx);
+		printf("Car %2d:  best_diff: %2.2f (std hist: %2d, calculated hist: %2d)\n", car_idx, best_diff, best_std, best_calc_idx);
 	}
 
 	/*If best difference is small, or small enough and better than the next best, assign to car*/

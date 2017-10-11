@@ -62,7 +62,7 @@ int hist_detect(int car_idx, float max_low, float max_high,
 	std::vector<struct Hist_data> &hists_calc,
 	std::vector<struct Hist_data> hists_std,
     float buf[],
-    bool debug));
+    bool debug);
 
 
 

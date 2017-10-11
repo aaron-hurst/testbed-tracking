@@ -20,8 +20,7 @@ int set_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 	
 	// Open and check config file
 	std::ifstream conf_file("config.txt");
-	if (!conf_file)
-	{
+	if (!conf_file) {
 		std::cout << "Error: could not load config file: config.txt" << std::endl;
 		return FAIL;
 	}
@@ -53,6 +52,10 @@ int set_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 		else if (name == "size_max")	line_stream >> sys_conf.car_size_max;
 		else if (name == "min_speed")	line_stream >> sys_conf.min_speed;
 		else if (name == "shutter")		line_stream >> sys_conf.shutter;
+
+		else if (name == "detect_mode")	line_stream >> sys_conf.detect_mode;
+		else if (name == "max_diff_l")	line_stream >> sys_conf.hist_diff_max_low;
+		else if (name == "max_diff_h")	line_stream >> sys_conf.hist_diff_max_high;
 		
 		// Cars: enter a second while loop to populate a dummy struct which is then pushed to the cars_all vector
 		if (name == "Car")
@@ -92,6 +95,18 @@ int set_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 void show_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 {
 	printf("================================\n");
+	printf("Detection modes: ");
+	if (sys_conf.detect_mode == 0) {
+		printf(" hue-based\n\n");
+	}
+	else if (sys_conf.detect_mode == 1) {
+		printf(" histogram-based\n");
+		printf(" hist_diff_max_low:    %d\n", sys_conf.hist_diff_max_low);
+		printf(" hist_diff_max_high:   %d\n\n", sys_conf.hist_diff_max_high);
+	}
+	else {
+		printf(" ERROR: detection mode unknown\n\n");
+	}
 	printf("Global Parameters:\n");
 	printf(" img_w:      %d\n", sys_conf.image_w);
 	printf(" img_h:      %d\n", sys_conf.image_h);

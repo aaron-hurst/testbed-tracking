@@ -27,6 +27,13 @@ int sh_detect(cv::Mat img_hsv, cv::Mat crop_mask, cv::Mat &mask, struct Car car,
 	int contour_area, contour_area_max = 0, count = 0, idx = 0;
 	cv::Moments mu;
 
+	/*Return if car hue or delta values are below zero (can only be detected using histogram detection)*/
+	if (car.hue < 0 || car.delta < 0) {
+		std::cout << "ERROR: car " << car.name << " cannot be detected using hue detection." << std::endl;
+		return FAIL;
+	}
+
+
 	// Hue-matching mask
 	cv::inRange(img_hsv, cv::Scalar(car.hue - car.delta, sys_conf.min_sat, sys_conf.min_val), cv::Scalar(car.hue + car.delta, 255, 255), mask);
 	//cv::inRange(img_hsv, cv::Scalar(sys_conf.min_sat, car.hue - car.delta, sys_conf.min_val), cv::Scalar(255, car.hue + car.delta, 255), mask);

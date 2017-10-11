@@ -96,32 +96,33 @@ int main(int argc,char **argv)
 	}
 
 	/*Setup calculated histogram log (debug mode only)*/
-	if (debug) {
+	if (debug && sys_conf.detect_mode == DETECT_MODE__HIST) {
 		hist_log_setup(n_frames);
 	}
 
-	/*Load standard histogram data*/
-	hists_std.clear();
-	for (int i = 0; i < cars_all.size(); i++) {
-		ret = hist_std_init(hists_std, cars_all[i].mac_add, i);
-		if (ret) {
-			std::cout << "ERROR CRITICAL: parsing standard histogram file failed" << std::endl;
-			return FAIL;
-		}
-	}
-
-	/*Print standard histograms if in debug mode*/
-	if (debug) {
-		printf("STANDARD HISTOGRAMS:\n");
-		for (int i = 0; i < hists_std.size(); i++) {
-			printf("%-17s: ", cars_all[hists_std[i].car].mac_add.c_str());
-			for (int j = 0; j < N_BINS; j++) {
-				printf("%1.2f ", hists_std[i].histogram[j]);
+	/*Load standard histogram data and print if in debug mode*/
+	if (sys_conf.detect_mode == DETECT_MODE__HIST) {
+		hists_std.clear();
+		for (int i = 0; i < cars_all.size(); i++) {
+			ret = hist_std_init(hists_std, cars_all[i].mac_add, i);
+			if (ret) {
+				std::cout << "ERROR CRITICAL: parsing standard histogram file failed" << std::endl;
+				return FAIL;
 			}
-			printf("\n");
 		}
+
+		if (debug) {
+			printf("STANDARD HISTOGRAMS:\n");
+			for (int i = 0; i < hists_std.size(); i++) {
+				printf("%-17s: ", cars_all[hists_std[i].car].mac_add.c_str());
+				for (int j = 0; j < N_BINS; j++) {
+					printf("%1.2f ", hists_std[i].histogram[j]);
+				}
+				printf("\n");
+			}
+		}
+		printf("\n");
 	}
-	printf("\n");
 
 	/*Initialise image matrices*/
 	img = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC3);
@@ -182,15 +183,27 @@ int main(int argc,char **argv)
 		}
 
 		/*Detect cars and calculate histograms over each contour*/
-		hist_detect_calc(img_hsv, crop_mask, contours, hists_calc, sys_conf, frame, debug);
+		if (sys_conf.detect_mode == DETECT_MODE__HIST) {
+			hist_detect_calc(img_hsv, crop_mask, contours, hists_calc, sys_conf, frame, debug);
+		}
 
 		/*Update all cars*/
 		for (int i = 0; i < cars_all.size(); i++)
 		{
-			//ret = sh_detect(img_hsv, crop_mask, masks_all[i], cars_all[i], sys_conf, buf);
+			/*Detection using selected mode*/
+			if (sys_conf.detect_mode == DETECT_MODE__SH) {
+				ret = sh_detect(img_hsv, crop_mask, masks_all[i], cars_all[i], sys_conf, buf);
+			}
+			else if (sys_conf.detect_mode == DETECT_MODE__HIST) {
+				ret = hist_detect(i, sys_conf.hist_diff_max_low, sys_conf.hist_diff_max_high,
+					contours, hists_calc, hists_std, buf, debug);
+			}
+			else {
+				std::cout << "ERROR CRITICAL: invalid detection mode" << std::endl;
+				return FAIL;
+			}
 
-			ret = hist_detect(i, 4, 10, contours, hists_calc, hists_std, buf);
-
+			/*Update state*/
 			if (ret) {
 				/*Car not found*/
 				cars_all[i].found = false;
@@ -203,8 +216,8 @@ int main(int argc,char **argv)
 				cars_all[i].update_state(buf[0], buf[1], sys_conf.origin, sys_conf.scale, sys_conf.min_speed, sys_time);
 			}
 
-			if (output_mode == MODE_DEBUG/*AND detection momde is SH*/) {
-				cv::imshow("mask", masks_all[i]);	// display each car's mask in debug mode
+			if (output_mode == MODE_DEBUG && sys_conf.detect_mode == DETECT_MODE__SH) {
+				cv::imshow("Object masks (main)", masks_all[i]); /*display each car's mask in debug mode*/
 				cv::waitKey(0);
 			}
 		}/*for all cars*/
@@ -218,6 +231,9 @@ int main(int argc,char **argv)
 		{
 			cars_all[i].state_new_to_old();
 		}
+
+		/*Impose user-specified delay (to ensure downstream systems can keep up)*/
+		usleep(delay*1000);
 	}/*for all frames*/
 	
 	

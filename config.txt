@@ -1,8 +1,16 @@
 # Config file for testbed computer vision/ehicle tracking program
 # Any line beginning with "#" is treated as a comment and ignored
 
-# Note 1: hue and delta values of -1 indicate car can only be detected
+# Note 1: Hue and delta values of -1 indicate car can only be detected
 # 		  using the histogram comparison method
+# Note 2: Good values for min_sat and min_val may vary depending on
+#         the conditions and detection mode used: (35,35) seems to
+#         generally work well for histogram detection, (30,30) or
+#         (25,25) works better for hue detection.
+
+# Type of detection/tracking desired
+# 0 --> single-hue detection; 1 --> histogram detection
+detect_mode 1
 
 # Global parameters
 img_width   640
@@ -20,6 +28,10 @@ min_speed	25
 shutter		3.03
 size_min    180
 size_max    700
+
+# Histogram-based detection parameters
+max_diff_l  4
+max_diff_h  10
 
 Car         N
 name 		orange-89

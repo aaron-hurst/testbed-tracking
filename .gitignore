@@ -1,5 +1,8 @@
 *.csv
 *.png
-*.m
-*vscode*
+Histogram_Analysis/
+Logs/
+test1/
+teat2/
+.vscode/
 *.xlsx

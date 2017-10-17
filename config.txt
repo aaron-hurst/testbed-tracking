@@ -75,9 +75,9 @@ hue 		49
 delta 		10
 END
 
-Car         N
+Car         Y
 name 		red-7
-MAC_add		00:06:66:61:6B
+MAC_add		00:06:66:61:A4:6B
 hue 		-1
 delta 		-1
 END

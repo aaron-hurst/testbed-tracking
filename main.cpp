@@ -202,6 +202,7 @@ int main(int argc,char **argv)
 	
 	sys_time.start = cv::getTickCount();
 	sys_time.old = sys_time.start;
+	
 	for (int frame = 0; frame < n_frames; frame++) {
 		/*Get image*/
 		Camera.grab();
@@ -239,8 +240,14 @@ int main(int argc,char **argv)
 				ret = sh_detect(img_hsv, crop_mask, masks_all[car], cars_all[car], sys_conf, buf);
 			}
 			else if (sys_conf.detect_mode == DETECT_MODE__HIST) {
-				ret = hist_detect(car, sys_conf.chi2_dist_max, sys_conf.intersect_min,
-					contours, hists_calc, hists_std, buf, debug);
+				//TODO: do the if statememt for car type within hist_detect
+				if (cars_all[car].hue > 0) {
+					ret = hist_detect(car, sys_conf.chi2_dist_max, sys_conf.intersect_min, contours, hists_calc, hists_std, 0, buf, debug);
+				}
+				else {
+					ret = hist_detect(car, sys_conf.chi2_dist_max, sys_conf.intersect_min, contours, hists_calc, hists_std, 1, buf, debug);
+				}
+				
 			}
 			else {
 				std::cout << "ERROR CRITICAL: invalid detection mode" << std::endl;

@@ -14,6 +14,8 @@
 #define FAIL		1
 #define SUCCESS		0
 
+#define MIN_HIST_VAL 0.01
+
 
 int hist_log_setup(int total_frames)
 {
@@ -170,7 +172,7 @@ int hist_detect_calc(cv::Mat img_hsv, cv::Mat global_mask,
 }
 
 
-float hist_compare(float hist_std[], float hist_test[], int len, float min_hist_val)
+float chi2_dist(float hist_std[], float hist_test[], int len, float min_hist_val)
 {
 	float diff = 0;
 	for (int i = 0; i < len; i++) {
@@ -185,54 +187,86 @@ float hist_compare(float hist_std[], float hist_test[], int len, float min_hist_
 	return diff;
 }
 
-int hist_detect(int car_idx, float max_low, float max_high,
+
+float intersection(float hist_std[], float hist_test[], int len)
+{
+	float intersection = 0, sum = 0;
+	for (int i = 0; i < len; i++) {
+		if (hist_test[i] < hist_std[i]) {
+			intersection += hist_test[i];
+		}
+		else {
+			intersection += hist_std[i];
+		}
+		sum += hist_std[i];
+	}
+
+	return intersection/sum;
+}
+
+
+int hist_detect(int car_idx, float chi2_threshold, float int_threshold,
 	std::vector<std::vector<cv::Point>> contours,
 	std::vector<struct Hist_data> &hists_calc,
 	std::vector<struct Hist_data> hists_std,
+	int type,
 	float buf[],
 	bool debug)
 {
 	/*Variables*/
-	float hist_diff = 0, best_diff = 9999;
+	float hist_diff = 9999, best_diff = 9999;
+	float hist_int = 0, best_int = 0;
 	int best_calc_idx = -1, best_ctr_idx = -1, best_std;
-	int delta_diff;	/* difference between best and decond best difference value*/
 	cv::Moments mu;
 
-	/*Compare calculated histograms with standard histogram for given car*/
+	/*Compare calculated histograms with standard histogram(s) for given car*/
 	for (int i = 0; i < hists_std.size(); i++) {
 		if (hists_std[i].car == car_idx) { /*standard histogram corresponds to car of interest*/
-			for (int j = 0; j < hists_calc.size(); j++) {
-				if (hists_calc[j].car < 0) { /*calculated histogram not already associated with a car*/
-					/*Calculate modified chi-squared difference between histograms, print in debug mode*/
-					hist_diff = hist_compare(hists_std[i].histogram, hists_calc[j].histogram, N_BINS, 0.02);
-					if(debug) {
-						printf("Car %2d:  %6.2f\n", car_idx, hist_diff);
+			if (type == 1) { /*car with marker*/
+				for (int j = 0; j < hists_calc.size(); j++) {
+					if (hists_calc[j].car < 0) { /*calculated histogram not already associated with a car*/
+						/*Calculate intersection between histograms*/
+						hist_int = intersection(hists_std[i].histogram, hists_calc[j].histogram, N_BINS);
+						if(debug) {
+							printf("Car %2d:  %6.2f\n", car_idx+1, hist_int);
+						}
+						/*Check if current intersection is best (largest) yet*/
+						if (hist_int > best_int) {
+							best_int = hist_int;
+							best_calc_idx = j; /*best matching calculated histogram*/
+							best_std = i; /*best matching standard histogram*/
+						}
 					}
-					/*Check if current difference is best (smallest) yet*/
-					if (hist_diff < best_diff) {
-						delta_diff = best_diff - hist_diff;
-						best_diff = hist_diff;
-						best_calc_idx = j; /*best matching calculated histogram*/
-						best_std = i; /*best matching standard histogram*/
+				} /*for calculated histogram not already matched to a car*/
+			}
+			else { /*plain coloured car*/
+				for (int j = 0; j < hists_calc.size(); j++) {
+					if (hists_calc[j].car < 0) { /*calculated histogram not already associated with a car*/
+						/*Calculate modified chi-squared difference between histograms*/
+						hist_diff = chi2_dist(hists_std[i].histogram, hists_calc[j].histogram, N_BINS, MIN_HIST_VAL);
+						if(debug) {
+							printf("Car %2d:  %6.2f\n", car_idx+1, hist_diff);
+						}
+						/*Check if current difference is best (smallest) yet*/
+						if (hist_diff < best_diff) {
+							best_diff = hist_diff;
+							best_calc_idx = j; /*best matching calculated histogram*/
+							best_std = i; /*best matching standard histogram*/
+						}
 					}
-				}
-			} /*for calculated histogram not already matched to a car*/
+				} /*for calculated histogram not already matched to a car*/
+			}
 		}
 	} /*for each standard histogram associated with car of interest*/
 
-	if (debug) {
-		printf("Car %2d:  best_diff: %2.2f (std hist: %2d, calculated hist: %2d)\n", car_idx+1, best_diff, best_std+1, best_calc_idx+1);
-	}
-
-	/*If best difference is small, or small enough and better than the next best, assign to car*/
-	if (best_diff < max_low || (best_diff < max_high && delta_diff > max_low)) {
-		/*Calculate car position and diagnostic data and store in buffer*/
+	/*If best difference is small/best intersection is large, assign to car and store data in buffer*/
+	if (best_diff < chi2_threshold || best_int > int_threshold) {
 		best_ctr_idx = hists_calc[best_calc_idx].contour_idx;
 		mu = cv::moments(contours[best_ctr_idx], true);	/*calculate moment of car's contour*/
-		buf[0] = mu.m10 / mu.m00;			/*x-position of car in pixels*/
-		buf[1] = mu.m01 / mu.m00;			/*y-position of car in pixels*/
-		buf[2] = hists_calc[best_calc_idx].area;	/*area of car's contour*/
-		buf[3] = best_calc_idx;					/*index of matched histogram*/
+		buf[0] = mu.m10 / mu.m00;						/*x-position of car in pixels*/
+		buf[1] = mu.m01 / mu.m00;						/*y-position of car in pixels*/
+		buf[2] = hists_calc[best_calc_idx].area;		/*area of car's contour*/
+		buf[3] = best_calc_idx;							/*index of matched histogram*/
 
 		/*Associate car with calculated histogram (so histogram is not re-compared)*/
 		hists_calc[best_calc_idx].car = car_idx;

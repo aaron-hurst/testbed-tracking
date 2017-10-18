@@ -17,6 +17,7 @@ struct Hist_data {
     int contour_idx;            // index of contours over which the histogram was calculated
     int car;                    // index of car associated with histogram (either from config or based on detection)
     int area;                   // area of mask used to calculate this (-1 for prototype histograms?)
+    int car_type;               // 0: plain, 1: markers
 };
 
 
@@ -41,14 +42,22 @@ int hist_detect_calc(cv::Mat img_hsv, cv::Mat global_mask,
 	int size_min, int size_max, int frame, bool debug);
 
 /**********************************************************************************
- * @brief Compares two histograms provided as arrays of fixed length
+ * @brief TODO: Compares two histograms provided as arrays of fixed length
  * 
  * Order of histograms matters
  * 
  * return: 
  */
-float hist_compare(float hist_std[], float hist_test[], int len, float min_hist_val);
+float chi2_dist(float hist_std[], float hist_test[], int len, float min_hist_val);
 
+/**********************************************************************************
+ * @brief TODO: Compares two histograms provided as arrays of fixed length
+ * 
+ * Order of histograms matters
+ * 
+ * return: 
+ */
+float intersection(float hist_std[], float hist_test[], int len);
 
 /**********************************************************************************
  * @brief Applies histogram comparison to detect and locate known vehicles
@@ -57,10 +66,11 @@ float hist_compare(float hist_std[], float hist_test[], int len, float min_hist_
  * 
  * return: 0 on success (found), 1 on failure (not found)
  */
-int hist_detect(int car_idx, float max_low, float max_high,
+int hist_detect(int car_idx, float chi2_threshold, float int_threshold,
 	std::vector<std::vector<cv::Point>> contours,
 	std::vector<struct Hist_data> &hists_calc,
-	std::vector<struct Hist_data> hists_std,
+    std::vector<struct Hist_data> hists_std,
+    int type,
     float buf[],
     bool debug);
 

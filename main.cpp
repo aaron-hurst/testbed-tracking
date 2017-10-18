@@ -156,7 +156,9 @@ int main(int argc,char **argv)
 	sleep(2);	// wait for camera to "warm up"
 	
 	/*Initialise camera*/
-	cam_auto_init(Camera, sys_conf, cars_all.size(), crop_mask, debug);
+	if (sys_conf.auto_shutter) {
+		cam_auto_init(Camera, sys_conf, cars_all.size(), crop_mask, debug);
+	}
 	
 	//-----------------------------------------------------------------------------
 	// Outputs
@@ -184,13 +186,19 @@ int main(int argc,char **argv)
 		Camera.grab();
 		Camera.retrieve(background);
 		printf("Background image collected, place cars back on testbed\n");
-		cv::imwrite("bakground.png", background);
+		cv::imwrite("background.png", background);
 	}
 	else {
 		background = cv::imread("background.png", CV_LOAD_IMAGE_COLOR);
+		if (background.empty())	{
+			std::cout << "ERROR CRITICAL: background.png not found" << std::endl;
+			return FAIL;
+		}
 	}
-	cv::imshow("Background image", background);
-	cv::waitKey(0);
+	if (debug) {
+		cv::imshow("Background image", background);
+		cv::waitKey(0);
+	}
 	
 	sys_time.start = cv::getTickCount();
 	sys_time.old = sys_time.start;

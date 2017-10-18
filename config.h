@@ -22,7 +22,7 @@ struct Config
 
 	/*Camera*/
 	float shutter;
-	bool force_shutter;
+	bool auto_shutter;
 	int image_w;
 	int image_h;
 	int crop_l;

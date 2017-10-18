@@ -48,7 +48,7 @@ int set_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 		else if (name == "crop_t")			line_stream >> sys_conf.crop_t;
 		else if (name == "crop_b")			line_stream >> sys_conf.crop_b;
 		else if (name == "shutter")			line_stream >> sys_conf.shutter;
-		else if (name == "force_shutter") 	line_stream >> sys_conf.force_shutter;
+		else if (name == "auto_shutter") 	line_stream >> sys_conf.auto_shutter;
 		
 		/*Image*/
 		else if (name == "min_sat")			line_stream >> sys_conf.min_sat;
@@ -122,7 +122,7 @@ void show_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 	printf(" crop_t:        %d\n", sys_conf.crop_t);
 	printf(" crop_b:        %d\n", sys_conf.crop_b);
 	printf(" shutter:       %1.2f\n", sys_conf.shutter);
-	printf(" force shutter: %d\n", sys_conf.force_shutter);
+	printf(" force shutter: %d\n", sys_conf.auto_shutter);
 	printf("Image:\n");
 	printf(" min_sat:       %d\n", sys_conf.min_sat);
 	printf(" min_val:       %d\n", sys_conf.min_val);

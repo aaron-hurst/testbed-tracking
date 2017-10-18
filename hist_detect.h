@@ -35,10 +35,10 @@ int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_add, 
  * 
  * adds contour index and contour area to hist struct
  */
-int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
-    std::vector<std::vector<cv::Point>> &contours,
-    std::vector<struct Hist_data> &hists_calc,
-    struct Config sys_conf, int frame, bool debug);
+int hist_detect_calc(cv::Mat img_hsv, cv::Mat global_mask,
+	std::vector<std::vector<cv::Point>> &contours,
+	std::vector<struct Hist_data> &hists_calc,
+	int size_min, int size_max, int frame, bool debug);
 
 /**********************************************************************************
  * @brief Compares two histograms provided as arrays of fixed length

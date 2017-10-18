@@ -40,28 +40,28 @@ hue 		6
 delta 		6
 END
 
-Car         N
+Car         Y
 name 		red-72
 MAC_add		00:06:66:61:A3:48
 hue 		170
 delta 		7
 END
 
-Car         N
+Car         Y
 name 		blue-5
 MAC_add		00:06:66:61:A6:CD
 hue 		99
 delta 		9
 END
 
-Car         N
+Car         Y
 name 		pink-10
 MAC_add		00:06:66:47:0A:0A
 hue 		149
 delta 		13
 END
 
-Car         N
+Car         Y
 name 		yellow-47
 MAC_add		00:06:66:61:9E:F7
 hue 		26
@@ -82,7 +82,7 @@ hue 		-1
 delta 		-1
 END
 
-Car         Y
+Car         N
 name 		red-20
 MAC_add		00:06:66:61:AA:DC
 hue 		-1

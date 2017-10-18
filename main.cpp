@@ -36,8 +36,14 @@
 #define FAIL		1
 #define SUCCESS		0
 
+//TODO: if histogram mode is successful, remove option or move SH detection to a different branch
 #define DETECT_MODE__SH		0
 #define DETECT_MODE__HIST	1
+
+
+#define THRESHOLD	55
+#define DILATION_ITER 	1
+
 
 /**********************************************************************************
 * MAIN
@@ -90,36 +96,36 @@ int main(int argc,char **argv)
 		return FAIL;
 	}
 	
-	/*Print config in debug mode*/
-	if (debug) {
-		show_config(cars_all, sys_conf);
-	}
-
-	/*Setup calculated histogram log (debug mode only)*/
-	if (debug && sys_conf.detect_mode == DETECT_MODE__HIST) {
-		hist_log_setup(n_frames);
-	}
-
-	/*Load standard histogram data and print if in debug mode*/
+	/*Load standard histogram data*/
+	//TODO: instead of a loop in main, move the loop to hist_std_init and pass cars_all to it
+	//TODO: add car type (plain or marker) to config file and histogram struct
 	if (sys_conf.detect_mode == DETECT_MODE__HIST) {
 		hists_std.clear();
-		for (int i = 0; i < cars_all.size(); i++) {
-			ret = hist_std_init(hists_std, cars_all[i].mac_add, i);
+		for (int car = 0; car < cars_all.size(); car++) {
+			ret = hist_std_init(hists_std, cars_all[car].mac_add, car);
 			if (ret) {
 				std::cout << "ERROR CRITICAL: parsing standard histogram file failed" << std::endl;
 				return FAIL;
 			}
 		}
+	}
 
-		if (debug) {
-			printf("STANDARD HISTOGRAMS:\n");
-			for (int i = 0; i < hists_std.size(); i++) {
-				printf("%-17s: ", cars_all[hists_std[i].car].mac_add.c_str());
-				for (int j = 0; j < N_BINS; j++) {
-					printf("%1.2f ", hists_std[i].histogram[j]);
-				}
-				printf("\n");
+	/*Print config in debug mode*/
+	if (debug) {
+		show_config(cars_all, sys_conf);
+	}
+
+	/*DEBUG: set up histogram log file and print standard histograms to console*/
+	if (debug && sys_conf.detect_mode == DETECT_MODE__HIST) {
+		hist_log_setup(n_frames);
+
+		printf("STANDARD HISTOGRAMS:\n");
+		for (int i = 0; i < hists_std.size(); i++) {
+			printf("%-17s: ", cars_all[hists_std[i].car].mac_add.c_str());
+			for (int j = 0; j < N_BINS; j++) {
+				printf("%1.2f ", hists_std[i].histogram[j]);
 			}
+			printf("\n");
 		}
 		printf("\n");
 	}
@@ -143,8 +149,7 @@ int main(int argc,char **argv)
 	//-----------------------------------------------------------------------------
 	/*Open camera*/
 	cam_set(Camera, sys_conf);
-	if (!Camera.open())
-	{
+	if (!Camera.open()) {
         std::cout << "Error opening camera" << std::endl;
         return FAIL;
 	}
@@ -156,9 +161,9 @@ int main(int argc,char **argv)
 	//-----------------------------------------------------------------------------
 	// Outputs
 	//-----------------------------------------------------------------------------
+	//TODO: add configuration paremeters and cars info to log file (at top)
 	ret = output_setup(output_mode, sock, cars_all.size());
-	if (ret)
-	{
+	if (ret) {
 		std::cout << "ERROR CRITICAL: setting up output modes failed" << std::endl;
 		ret = 0;
 		return FAIL;
@@ -170,32 +175,58 @@ int main(int argc,char **argv)
 	sys_time.start = cv::getTickCount();
 	sys_time.old = sys_time.start;
 	
+	//TODO: make function for getting background, imshow in debug
+	cv::Mat background = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC3);
+	cv::Mat diff, global_mask;
+	printf("Getting background image, please remove cars and then press enter\n");
+	cv::imshow("Background image", background);
+	cv::waitKey(0);
+	Camera.grab();
+	Camera.retrieve(background);
+	printf("Background image collected, place cars back on testbed\n");
+	cv::imshow("Background image", background);
+	cv::waitKey(0);
+	
+
 	for (int frame = 0; frame < n_frames; frame++)
 	{
 		/*Get image*/
 		Camera.grab();
 		Camera.retrieve(img);
 		sys_time.current = cv::getTickCount();  /*current time*/
-		cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);  /*convert to HSV*/
+		//cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);  /*convert to HSV*/
+
+		/*Get global mask*/
+		//TODO: save background image, allow user to use previous background image (e.g. type Y and press enter)
+		cv::absdiff(background, img, diff);
+		cv::cvtColor(diff, global_mask, cv::COLOR_BGR2GRAY);
+		cv::threshold(global_mask, global_mask, THRESHOLD, 255, cv::THRESH_BINARY);
+		global_mask = global_mask & crop_mask;
+		cv::dilate(global_mask, global_mask, cv::Mat(), cv::Point(-1, -1), DILATION_ITER); // 3x3 dilation
+
+		cv::cvtColor(diff, img_hsv, cv::COLOR_BGR2HSV);  /*convert to HSV*/
 
 		if (debug) {
-			cv::imshow("Source image for tracking/detection", img);  /*display source image in debug mode*/
+			cv::imshow("Difference image", diff);  /*display source image in debug mode*/
+			cv::imshow("Difference image mask", global_mask);  /*display source image in debug mode*/
+			cv::waitKey(0);
 		}
 
 		/*Detect cars and calculate histograms over each contour*/
 		if (sys_conf.detect_mode == DETECT_MODE__HIST) {
-			hist_detect_calc(img_hsv, crop_mask, contours, hists_calc, sys_conf, frame, debug);
+			hist_detect_calc(img_hsv, global_mask, contours, hists_calc,
+				sys_conf.car_size_min, sys_conf.car_size_max, frame, debug);
 		}
 
 		/*Update all cars*/
-		for (int i = 0; i < cars_all.size(); i++)
+		for (int car = 0; car < cars_all.size(); car++)
 		{
 			/*Detection using selected mode*/
 			if (sys_conf.detect_mode == DETECT_MODE__SH) {
-				ret = sh_detect(img_hsv, crop_mask, masks_all[i], cars_all[i], sys_conf, buf);
+				ret = sh_detect(img_hsv, crop_mask, masks_all[car], cars_all[car], sys_conf, buf);
 			}
 			else if (sys_conf.detect_mode == DETECT_MODE__HIST) {
-				ret = hist_detect(i, sys_conf.hist_diff_max_low, sys_conf.hist_diff_max_high,
+				ret = hist_detect(car, sys_conf.hist_diff_max_low, sys_conf.hist_diff_max_high,
 					contours, hists_calc, hists_std, buf, debug);
 			}
 			else {
@@ -206,18 +237,18 @@ int main(int argc,char **argv)
 			/*Update state*/
 			if (ret) {
 				/*Car not found*/
-				cars_all[i].found = false;
-				cars_all[i].update_state_lost();
+				cars_all[car].found = false;
+				cars_all[car].update_state_lost();
 				ret = 0;
 			}
 			else {
 				/*Car found successfully*/
-				cars_all[i].found = true;
-				cars_all[i].update_state(buf[0], buf[1], sys_conf.origin, sys_conf.scale, sys_conf.min_speed, sys_time);
+				cars_all[car].found = true;
+				cars_all[car].update_state(buf[0], buf[1], sys_conf.origin, sys_conf.scale, sys_conf.min_speed, sys_time);
 			}
 
 			if (output_mode == MODE_DEBUG && sys_conf.detect_mode == DETECT_MODE__SH) {
-				cv::imshow("Object masks (main)", masks_all[i]); /*display each car's mask in debug mode*/
+				cv::imshow("Object masks (main)", masks_all[car]); /*display each car's mask in debug mode*/
 				cv::waitKey(0);
 			}
 		}/*for all cars*/
@@ -227,9 +258,9 @@ int main(int argc,char **argv)
 		
 		/*Update old data values*/
 		sys_time.old = sys_time.current;
-		for (int i = 0; i < cars_all.size(); i++)
+		for (int car = 0; car < cars_all.size(); car++)
 		{
-			cars_all[i].state_new_to_old();
+			cars_all[car].state_new_to_old();
 		}
 
 		/*Impose user-specified delay (to ensure downstream systems can keep up)*/

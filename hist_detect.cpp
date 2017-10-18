@@ -14,9 +14,6 @@
 #define FAIL		1
 #define SUCCESS		0
 
-#define DILATION_ITER 	1
-
-
 
 int hist_log_setup(int total_frames)
 {
@@ -60,8 +57,8 @@ int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr,
 		std::istringstream ss(line);
 		/*get MAC address (first item on line) and compare to provided MAC address*/
 		std::getline(ss, token, ',');
-		if (mac_addr.compare(token) == 0/*std::strcmp(token, mac_addr*/) {
-			/*Matching entry found, store a new histogram - multiple matching entries may be found for each car*/
+		if (mac_addr.compare(token) == 0) {
+			/*Matching entry found, store a new histogram*/
 			idx = 0;
 			while(std::getline(ss, token, ',')) {
 				hist_tmp.histogram[idx] = std::stof(token);
@@ -84,13 +81,12 @@ int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr,
 }
 
 //TODO: error checking
-int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
+int hist_detect_calc(cv::Mat img_hsv, cv::Mat global_mask,
 	std::vector<std::vector<cv::Point>> &contours,
 	std::vector<struct Hist_data> &hists_calc,
-	struct Config sys_conf, int frame, bool debug)
+	int size_min, int size_max, int frame, bool debug)
 {
 	/*Variables*/
-	cv::Mat mask = cv::Mat::zeros(img_hsv.rows, img_hsv.cols, CV_8UC1);
 	cv::Mat mask_ctr = cv::Mat::zeros(img_hsv.rows, img_hsv.cols, CV_8UC1);
 	int hist_bins = N_BINS;
 	float hue_range[] = {0, MAX_HUE};
@@ -105,25 +101,20 @@ int hist_detect_calc(cv::Mat img_hsv, cv::Mat crop_mask,
 	contours.clear();
 	hists_calc.clear();
 
-	/*Global hue-matching mask*/
-	cv::inRange(img_hsv, cv::Scalar(0, sys_conf.min_sat, sys_conf.min_val), cv::Scalar(180, 255, 255), mask);
-	mask = mask & crop_mask;
-	cv::dilate(mask, mask, cv::Mat(), cv::Point(-1, -1), DILATION_ITER); // 3x3 dilation
-
 	/*Find contours*/
-	cv::findContours(mask, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+	cv::findContours(global_mask, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
 	/*Calculate histogram for each contour of sufficient size*/
 	for (int i = 0; i < contours.size(); i++) {
 		contour_area = cv::contourArea(contours[i]);
-		if (contour_area > sys_conf.car_size_min && contour_area < sys_conf.car_size_max) {
+		if (contour_area > size_min && contour_area < size_max) {
 			/*Generate contour mask*/
 			mask_ctr = cv::Mat::zeros(img_hsv.rows, img_hsv.cols, CV_8UC1);
 			cv::drawContours(mask_ctr, contours, i, cv::Scalar(255, 255, 255), CV_FILLED, 8);
-			if (debug) {
-				imshow("Contour mask (hist_detect_calc)", mask_ctr);
-				cv::waitKey(0);
-			}
+			// if (debug) {
+			// 	imshow("Contour mask (hist_detect_calc)", mask_ctr);
+			// 	cv::waitKey(0);
+			// }
 			
 			/*Calculate histogram on contour mask*/
 			cv::calcHist(&img_hsv, 1, channel, mask_ctr, hist_tmp_mat, 1, &hist_bins, range, true, false);
@@ -230,7 +221,7 @@ int hist_detect(int car_idx, float max_low, float max_high,
 	} /*for each standard histogram associated with car of interest*/
 
 	if (debug) {
-		printf("Car %2d:  best_diff: %2.2f (std hist: %2d, calculated hist: %2d)\n", car_idx, best_diff, best_std, best_calc_idx);
+		printf("Car %2d:  best_diff: %2.2f (std hist: %2d, calculated hist: %2d)\n", car_idx+1, best_diff, best_std+1, best_calc_idx+1);
 	}
 
 	/*If best difference is small, or small enough and better than the next best, assign to car*/

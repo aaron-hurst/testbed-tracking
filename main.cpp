@@ -226,7 +226,7 @@ int main(int argc,char **argv)
 				ret = sh_detect(img_hsv, crop_mask, masks_all[car], cars_all[car], sys_conf, buf);
 			}
 			else if (sys_conf.detect_mode == DETECT_MODE__HIST) {
-				ret = hist_detect(car, sys_conf.hist_diff_max_low, sys_conf.hist_diff_max_high,
+				ret = hist_detect(car, sys_conf.chi2_dist_max, sys_conf.intersect_min,
 					contours, hists_calc, hists_std, buf, debug);
 			}
 			else {

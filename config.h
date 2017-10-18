@@ -13,39 +13,36 @@
 **********************************************************************************/
 struct Config
 {
-	// Detection mode
+	/*Detection mode*/
 	int detect_mode;
 	
-	// Shutter duration
+	/*Background*/
+	bool get_new_background;
+	int diff_threshold;
+
+	/*Camera*/
 	float shutter;
-	
-	// Image resolution
+	bool force_shutter;
 	int image_w;
 	int image_h;
-
-	// Cropping parameters
 	int crop_l;
 	int crop_r;
 	int crop_t;
 	int crop_b;
-	
-	// Image processing parameters
+
+	/*Image*/
 	int min_sat;
 	int min_val;
-	
-	// Parameters for transformation to global coordinates
 	int origin[2];
 	float scale;
-	
-	// General vehicle properties
 	int car_size_max;
 	int car_size_min;
 
-	// Histogram-based detection parameters
-	int hist_diff_max_low;
-	int hist_diff_max_high;
+	/*Histogram comparison*/
+	float chi2_dist_max;
+	float intersect_min;
 	
-	// State estimation parameters
+	/*Other*/
 	int min_speed;
 };
 

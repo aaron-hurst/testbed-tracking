@@ -12,27 +12,38 @@
 # 0 --> single-hue detection; 1 --> histogram detection
 detect_mode 1
 
-# Global parameters
+# Background
+get_new     1
+threshold   50
+
+# Camera
 img_width   640
 img_height  480
 crop_l 		18
 crop_r 		18
 crop_t 		18
 crop_b 		18
+shutter		3.03
+force_shutter 0
+
+# Image
+# TODO: min_sat, min_val may not be necessary if histogram detection is successful
 min_sat     35
 min_val     35
 origin_x	16
 origin_y	5
 scale		1.9302
-min_speed	25
-shutter		3.03
 size_min    180
 size_max    700
 
 # Histogram-based detection parameters
-max_diff_l  4
-max_diff_h  10
+chi2_dist_max  4
+intersect_min  0.85
 
+# Other
+min_speed	25
+
+# Cars
 Car         N
 name 		orange-89
 MAC_add		00:06:66:61:A9:59

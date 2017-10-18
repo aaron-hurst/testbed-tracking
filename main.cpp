@@ -172,29 +172,34 @@ int main(int argc,char **argv)
 	/******************************************************************************
 	* TRACKING (INCLUDING REPORTING)
 	******************************************************************************/
-	sys_time.start = cv::getTickCount();
-	sys_time.old = sys_time.start;
 	
 	//TODO: make function for getting background, imshow in debug
 	cv::Mat background = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC3);
 	cv::Mat diff, global_mask;
-	printf("Getting background image, please remove cars and then press enter\n");
-	cv::imshow("Background image", background);
-	cv::waitKey(0);
-	Camera.grab();
-	Camera.retrieve(background);
-	printf("Background image collected, place cars back on testbed\n");
+
+	if (sys_conf.get_new_background) {
+		printf("Getting background image, please remove cars and then press enter\n");
+		cv::imshow("Background image", background);
+		cv::waitKey(0);
+		Camera.grab();
+		Camera.retrieve(background);
+		printf("Background image collected, place cars back on testbed\n");
+		cv::imwrite("bakground.png", background);
+	}
+	else {
+		background = cv::imread("background.png", CV_LOAD_IMAGE_COLOR);
+	}
 	cv::imshow("Background image", background);
 	cv::waitKey(0);
 	
-
-	for (int frame = 0; frame < n_frames; frame++)
-	{
+	sys_time.start = cv::getTickCount();
+	sys_time.old = sys_time.start;
+	for (int frame = 0; frame < n_frames; frame++) {
 		/*Get image*/
 		Camera.grab();
 		Camera.retrieve(img);
 		sys_time.current = cv::getTickCount();  /*current time*/
-		//cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);  /*convert to HSV*/
+		//cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);  /*convert to HSV - only needed for hue*/
 
 		/*Get global mask*/
 		//TODO: save background image, allow user to use previous background image (e.g. type Y and press enter)

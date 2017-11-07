@@ -44,9 +44,9 @@ intersect_min  0.85
 min_speed	25
 
 # Cars
-Car         N
+Car         Y
 name 		orange-89
-MAC_add		00:06:66:61:A9:59
+MAC_add		00:06:66:61:9B:2D
 hue 		6
 delta 		6
 END
@@ -86,23 +86,23 @@ hue 		49
 delta 		10
 END
 
-Car         Y
-name 		red-7
-MAC_add		00:06:66:61:A4:6B
-hue 		-1
-delta 		-1
-END
+# Car         N
+# name 		red-7
+# MAC_add		00:06:66:61:A4:6B
+# hue 		-1
+# delta 		-1
+# END
 
-Car         N
-name 		red-20
-MAC_add		00:06:66:61:AA:DC
-hue 		-1
-delta 		-1
-END
+# Car         N
+# name 		red-20
+# MAC_add		00:06:66:61:AA:DC
+# hue 		-1
+# delta 		-1
+# END
 
-Car         Y
-name 		red-37
-MAC_add		00:06:66:61:9C:89
-hue 		-1
-delta 		-1
-END
+# Car         N
+# name 		red-37
+# MAC_add		00:06:66:61:9C:89
+# hue 		-1
+# delta 		-1
+# END

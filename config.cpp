@@ -8,7 +8,7 @@
 #include "car.h"		// Car struct
 #include "config.h"		// Config struct
 
-#define FAIL		1
+#define FAILURE		1
 #define SUCCESS		0
 
 
@@ -22,7 +22,7 @@ int set_config(std::vector<struct Car> &cars_all, Config &sys_conf)
 	std::ifstream conf_file("config.txt");
 	if (!conf_file) {
 		std::cout << "Error: could not load config file: config.txt" << std::endl;
-		return FAIL;
+		return FAILURE;
 	}
 	
 	/*Parse config.txt*/

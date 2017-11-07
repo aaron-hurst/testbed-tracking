@@ -11,7 +11,7 @@
 #include "hist_detect.h"
 #include "config.h"
 
-#define FAIL		1
+#define FAILURE		1
 #define SUCCESS		0
 
 #define MIN_HIST_VAL 0.01
@@ -23,7 +23,7 @@ int hist_log_setup(int total_frames)
 	FILE * hist_log;
 	hist_log = fopen("hist_log.csv","w");
 	if (hist_log == NULL) {
-		return FAIL;
+		return FAILURE;
 	}
 
 	/*Write file lines*/
@@ -51,7 +51,7 @@ int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr,
 	std::ifstream hist_conf("hist_config.txt");
 	if (!hist_conf) {
 		std::cout << "Error: could not load histogram config file: hist_config.txt" << std::endl;
-		return FAIL;
+		return FAILURE;
 	}
 
 	/*Parse each line*/
@@ -76,7 +76,7 @@ int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr,
 
 	/*Return failure if no matching histogram was found for the given MAC address*/
 	if (!found) {
-		return FAIL;
+		return FAILURE;
 	}
 	
 	return SUCCESS;
@@ -276,7 +276,7 @@ int hist_detect(int car_idx, float chi2_threshold, float int_threshold,
 		for (int i = 0; i < 5; i++) {
 			buf[i] = 0;
 		}
-		return FAIL;
+		return FAILURE;
 	}
 
 	return SUCCESS;

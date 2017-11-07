@@ -12,7 +12,7 @@
 #include "car.h"
 #include "time.h"
 
-#define FAIL		1
+#define FAILURE		1
 #define SUCCESS		0
 
 
@@ -46,7 +46,7 @@ int output_setup(int &output_mode, int &sock, int n_cars)
 		if (sock == -1)
 		{
 			std::cout<< "ERROR: Could not create socket" <<std::endl;
-			return FAIL;
+			return FAILURE;
 		}
 		std::cout << "Socket created" << std::endl;
 	
@@ -59,7 +59,7 @@ int output_setup(int &output_mode, int &sock, int n_cars)
 		if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
 		{
 			std::cout<< "ERROR: Connection failed" << std::endl;
-			return FAIL;
+			return FAILURE;
 		}
 		std::cout << "Connected" << std::endl;
 	}
@@ -115,7 +115,7 @@ int send_outputs(std::vector<struct Car> cars_all, int output_mode, int sock, st
     }
 
     if (ret > 0) {
-        return FAIL;
+        return FAILURE;
     }
 
     return SUCCESS;
@@ -175,7 +175,7 @@ int send_json(std::vector<struct Car> cars_all, int sock, bool debug)
 		// Live mode: send JSON string to controller via socket
 		if(send(sock, json_string.c_str(), json_string.size(), 0) < 0) {
 			std::cout << "JSON send failed" << std::endl;
-			return FAIL;
+			return FAILURE;
 		}
 	}
 	

@@ -6,7 +6,7 @@
 #include "config.h"
 #include "sh_detect.h"
 
-#define FAIL		1
+#define FAILURE		1
 #define SUCCESS		0
 
 #define DILATION_ITER 	1
@@ -30,7 +30,7 @@ int sh_detect(cv::Mat img_hsv, cv::Mat crop_mask, cv::Mat &mask, struct Car car,
 	/*Return if car hue or delta values are below zero (can only be detected using histogram detection)*/
 	if (car.hue < 0 || car.delta < 0) {
 		std::cout << "ERROR: car " << car.name << " cannot be detected using hue detection." << std::endl;
-		return FAIL;
+		return FAILURE;
 	}
 
 
@@ -46,10 +46,10 @@ int sh_detect(cv::Mat img_hsv, cv::Mat crop_mask, cv::Mat &mask, struct Car car,
 	std::vector<std::vector<cv::Point>> contours;
 	cv::findContours(mask_use, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);	// note: mask_use is modified here
 
-	// Return FAIL if no contours exist
+	// Return FAILURE if no contours exist
 	if (contours.size() < 1) {
 		set_buf_zero(buf);
-		return FAIL;
+		return FAILURE;
 	}
 	
 	// Find correct contour associated with the car
@@ -72,7 +72,7 @@ int sh_detect(cv::Mat img_hsv, cv::Mat crop_mask, cv::Mat &mask, struct Car car,
 	if (count == 0) {
 		// No cars found
 		set_buf_zero(buf);
-		return FAIL;
+		return FAILURE;
 	}
 	else if (count > 1) {
 		// Multiple contours of allowable size

@@ -12,7 +12,7 @@
 #include "camera.h"
 #include "config.h"
 
-#define FAIL		1
+#define FAILURE		1
 #define SUCCESS		0
 
 
@@ -108,7 +108,7 @@ int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_
 		if (sys_conf.shutter > SHUTTER_MAX)	{
 			printf("ERROR: Camera Auto Initialisation. Setting default shutter period of %1.2f ms.\n", 3.3*SHUTTER_DEFAULT);
 			sys_conf.shutter = SHUTTER_DEFAULT;
-			return FAIL;
+			return FAILURE;
 		}
 	}
 	

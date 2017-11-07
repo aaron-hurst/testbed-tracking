@@ -1,9 +1,10 @@
-Histogram_Analysis/
-Subtraction_hist_calib/
-Logs/
-test1/
-teat2/
+# Directories
 .vscode/
-*.xlsx
+Tests/
+Calibration/
+
+# Log files
 *.csv
+
+# Images
 *.png

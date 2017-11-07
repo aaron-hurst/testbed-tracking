@@ -33,7 +33,7 @@
 /**********************************************************************************
 * MACROS
 **********************************************************************************/
-#define FAIL		1
+#define FAILURE		1
 #define SUCCESS		0
 
 //TODO: if histogram mode is successful, remove option or move SH detection to a different branch
@@ -45,9 +45,6 @@
 #define DILATION_ITER 	1
 
 
-/**********************************************************************************
-* MAIN
-**********************************************************************************/
 int main(int argc,char **argv)
 {
 	/******************************************************************************
@@ -93,7 +90,7 @@ int main(int argc,char **argv)
 	ret = set_config(cars_all, sys_conf);
 	if (ret) {
 		std::cout << "ERROR CRITICAL: parsing configuration file failed" << std::endl;
-		return FAIL;
+		return FAILURE;
 	}
 	
 	/*Load standard histogram data*/
@@ -105,7 +102,7 @@ int main(int argc,char **argv)
 			ret = hist_std_init(hists_std, cars_all[car].mac_add, car);
 			if (ret) {
 				std::cout << "ERROR CRITICAL: parsing standard histogram file failed" << std::endl;
-				return FAIL;
+				return FAILURE;
 			}
 		}
 	}
@@ -151,7 +148,7 @@ int main(int argc,char **argv)
 	cam_set(Camera, sys_conf);
 	if (!Camera.open()) {
         std::cout << "Error opening camera" << std::endl;
-        return FAIL;
+        return FAILURE;
 	}
 	sleep(2);	// wait for camera to "warm up"
 	
@@ -168,7 +165,7 @@ int main(int argc,char **argv)
 	if (ret) {
 		std::cout << "ERROR CRITICAL: setting up output modes failed" << std::endl;
 		ret = 0;
-		return FAIL;
+		return FAILURE;
 	}
 	
 	/******************************************************************************
@@ -192,7 +189,7 @@ int main(int argc,char **argv)
 		background = cv::imread("background.png", CV_LOAD_IMAGE_COLOR);
 		if (background.empty())	{
 			std::cout << "ERROR CRITICAL: background.png not found" << std::endl;
-			return FAIL;
+			return FAILURE;
 		}
 	}
 	if (debug) {
@@ -251,7 +248,7 @@ int main(int argc,char **argv)
 			}
 			else {
 				std::cout << "ERROR CRITICAL: invalid detection mode" << std::endl;
-				return FAIL;
+				return FAILURE;
 			}
 
 			/*Update state*/

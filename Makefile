@@ -1,4 +1,7 @@
-src = $(wildcard *.cpp)
+src = 	$(wildcard *.cpp) \
+		$(wildcard common/*.cpp) \
+		$(wildcard histogram/*.cpp) \
+		$(wildcard hue/*.cpp)
 obj = $(src:.cpp=.o)
 DEPS = $(wildcard *.h)
 
@@ -19,4 +22,4 @@ tracker: $(obj)
 # Clean rule
 .PHONY: clean
 clean:
-	rm -f $(obj) tracker
+	rm -f $(obj)

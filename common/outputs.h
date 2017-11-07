@@ -1,9 +1,11 @@
 #ifndef CARSCV_OUTPUTS_H
 #define CARSCV_OUTPUTS_H
 
+#include <sys/socket.h>	// socket comms
+
+
 #include "time.h"
 #include "car.h"
-#include <sys/socket.h>	// socket comms
 
 #define MODE_LIVE			0
 #define MODE_LIVE_CONS		1

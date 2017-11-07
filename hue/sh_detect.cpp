@@ -2,8 +2,8 @@
 #include <opencv2/opencv.hpp>
 
 // Local includes
-#include "car.h"
-#include "config.h"
+#include "../common/car.h"
+#include "../common/config.h"
 #include "sh_detect.h"
 
 #define FAILURE		1

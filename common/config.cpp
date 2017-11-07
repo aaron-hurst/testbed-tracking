@@ -5,8 +5,8 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "car.h"		// Car struct
-#include "config.h"		// Config struct
+#include "car.h"			// Car struct
+#include "config.h"	// Config struct
 
 #define FAILURE		1
 #define SUCCESS		0

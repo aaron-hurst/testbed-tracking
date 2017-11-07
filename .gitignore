@@ -1,7 +1,7 @@
 # Directories
 .vscode/
-Tests/
-Calibration/
+AA-Tests/
+AA-Calibration/
 
 # Log files
 *.csv

@@ -9,7 +9,7 @@
 
 // Local includes
 #include "hist_detect.h"
-#include "config.h"
+#include "../common/config.h"
 
 #define FAILURE		1
 #define SUCCESS		0
@@ -48,7 +48,7 @@ int hist_std_init(std::vector<struct Hist_data> &hist_std, std::string mac_addr,
 	struct Hist_data hist_tmp;
 	
 	/*Open histogram config file*/
-	std::ifstream hist_conf("hist_config.txt");
+	std::ifstream hist_conf("histogram/hist_config.txt");
 	if (!hist_conf) {
 		std::cout << "Error: could not load histogram config file: hist_config.txt" << std::endl;
 		return FAILURE;

@@ -22,13 +22,13 @@
 /**********************************************************************************
 * LOCAL INCLUDES
 **********************************************************************************/
-#include "config.h"
-#include "outputs.h"
-#include "camera.h"
-#include "car.h"
-#include "time.h"
-#include "sh_detect.h"
-#include "hist_detect.h"
+#include "common/config.h"
+#include "common/outputs.h"
+#include "common/camera.h"
+#include "common/car.h"
+#include "common/time.h"
+#include "hue/sh_detect.h"
+#include "histogram/hist_detect.h"
 
 /**********************************************************************************
 * MACROS

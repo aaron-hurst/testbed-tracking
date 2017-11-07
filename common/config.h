@@ -65,7 +65,7 @@ struct Config
 	 *
 	 * Prints general configuration information to the console.
 	 * 
-	 * @return 0 on success, 1 on failure
+	 * @return void
 	 */
 	void print_config(void);
 };

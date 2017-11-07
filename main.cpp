@@ -26,6 +26,7 @@
 #include "common/outputs.h"
 #include "common/camera.h"
 #include "common/car.h"
+#include "common/car_config.h"
 #include "common/time.h"
 #include "hue/sh_detect.h"
 #include "histogram/hist_detect.h"
@@ -39,7 +40,6 @@
 //TODO: if histogram mode is successful, remove option or move SH detection to a different branch
 #define DETECT_MODE__SH		0
 #define DETECT_MODE__HIST	1
-
 
 #define THRESHOLD	55
 #define DILATION_ITER 	1
@@ -92,6 +92,8 @@ int main(int argc,char **argv)
 		std::cout << "ERROR CRITICAL: parsing configuration file failed" << std::endl;
 		return FAILURE;
 	}
+
+	cars_read_config(cars_all);
 	
 	/*Load standard histogram data*/
 	//TODO: instead of a loop in main, move the loop to hist_std_init and pass cars_all to it
@@ -110,6 +112,7 @@ int main(int argc,char **argv)
 	/*Print config in debug mode*/
 	if (debug) {
 		conf.print_config();
+		cars_print_config(cars_all);
 	}
 
 	/*DEBUG: set up histogram log file and print standard histograms to console*/
@@ -263,7 +266,7 @@ int main(int argc,char **argv)
 			else {
 				/*Car found successfully*/
 				cars_all[car].found = true;
-				cars_all[car].update_state(buf[0], buf[1], conf.origin, conf.scale, conf.min_speed, sys_time);
+				cars_all[car].update_state(buf[0], buf[1], conf, sys_time);
 			}
 
 			if (output_mode == MODE_DEBUG && conf.detect_mode == DETECT_MODE__SH) {

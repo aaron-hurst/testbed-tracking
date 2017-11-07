@@ -19,10 +19,10 @@ threshold   50
 # Camera
 img_width   640
 img_height  480
-crop_l 		18
-crop_r 		18
-crop_t 		18
-crop_b 		18
+crop_n 		18
+crop_e 		18
+crop_s 		18
+crop_w 		18
 shutter		3.03
 auto_shutter 0
 

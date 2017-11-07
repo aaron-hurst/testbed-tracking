@@ -1,16 +1,21 @@
 #ifndef CARSCV_CONFIG_H
 #define CARSCV_CONFIG_H
 
+/*General includes*/
 #include <vector>
 
+/*External libraries*/
 #include <opencv2/opencv.hpp>
 
-#include "car.h"
+/*Project includes*/
 #include "config.h"
 
-/**********************************************************************************
-* Configuration Data Structure
-**********************************************************************************/
+/*Forward declarations*/
+struct Car;
+
+//=====================================
+/*! @struct Configuration information
+ */
 struct Config
 {
 	/*Detection mode*/
@@ -25,11 +30,11 @@ struct Config
 	bool auto_shutter;
 	int image_w;
 	int image_h;
-	int crop_l;
-	int crop_r;
-	int crop_t;
-	int crop_b;
-
+	int crop_n;
+	int crop_e;
+	int crop_s;
+	int crop_w;
+	
 	/*Image*/
 	int min_sat;
 	int min_val;
@@ -44,46 +49,25 @@ struct Config
 	
 	/*Other*/
 	int min_speed;
+
+	//=====================================
+	/*! @brief Reads config information from config file
+	 *
+	 * Reads and parses general configuration information from the 
+	 * config file, storing it in a Config struct.
+	 * 
+	 * @return 0 on success, 1 on failure
+	 */
+	int read_config(void);
+
+	//=====================================
+	/*! @brief Prints config information to the console
+	 *
+	 * Prints general configuration information to the console.
+	 * 
+	 * @return 0 on success, 1 on failure
+	 */
+	void print_config(void);
 };
 
-
-/**********************************************************************************
-* Get Configuration
-* 
-* Reads and parses general and vehicle-specific configuration data from config.txt,
-* storing it in a Config struct and one or more Car structs as required
-* 
-* cars_all	Vector for storing one or more Car structs
-* sys_conf	Config struct for storing global configuration parameters
-*
-* return: 0 on success, 1 on failure
-**********************************************************************************/
-int set_config(std::vector<struct Car> &cars_all, Config &sys_conf);
-
-/**********************************************************************************
-* Show Configuration
-* 
-* Reads configuration data from sys_config struct and prints this to the console
-* 
-* sys_conf	Config struct containing global configuration parameters
-*
-* return: 0 on success, 1 on failure
-**********************************************************************************/
-void show_config(std::vector<struct Car> &cars_all, Config &sys_conf);
-
-
-/**********************************************************************************
-* Get cropping mask
-* 
-* Generates a mask for cropping camera images to remove the borders of the table.
-* The mask can then be used in subsequent functions.
-* 
-* sys_conf	 Config struct containing global configuration parameters
-* crop_mask	 binary mask to be used for applying cropping
-*
-* return: void
-**********************************************************************************/
-void get_cropping_mask(struct Config sys_conf, cv::Mat &crop_mask);
-
-
-#endif
+#endif /*CARSCV_CONFIG_H*/

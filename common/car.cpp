@@ -1,6 +1,10 @@
+/*Standard includes*/
 #include <math.h>				// sqrt, atan2, pow
+
+/*External libraries*/
 #include <opencv2/opencv.hpp>	// cv::getTickFrequency()
 
+/*Project includes*/
 #include "car.h"
 #include "time.h"
 

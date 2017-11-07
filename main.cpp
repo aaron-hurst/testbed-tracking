@@ -59,7 +59,7 @@ int main(int argc,char **argv)
 	int ret;							// function return value
 	float buf[5];						// buffer passed to detection algorithm
 	int sock;							// network socket
-	Config sys_conf;					// store config data
+	Config conf;					// store config data
 	Time sys_time;						// store time variables
 	raspicam::RaspiCam_Cv Camera;		// camera object
 	std::vector<Car> cars_all;			// store car structs
@@ -87,7 +87,7 @@ int main(int argc,char **argv)
 	// Config
 	//-----------------------------------------------------------------------------
 	/*Load and set system and car configuration parameters*/
-	ret = set_config(cars_all, sys_conf);
+	ret = conf.read_config();
 	if (ret) {
 		std::cout << "ERROR CRITICAL: parsing configuration file failed" << std::endl;
 		return FAILURE;
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
 	/*Load standard histogram data*/
 	//TODO: instead of a loop in main, move the loop to hist_std_init and pass cars_all to it
 	//TODO: add car type (plain or marker) to config file and histogram struct
-	if (sys_conf.detect_mode == DETECT_MODE__HIST) {
+	if (conf.detect_mode == DETECT_MODE__HIST) {
 		hists_std.clear();
 		for (int car = 0; car < cars_all.size(); car++) {
 			ret = hist_std_init(hists_std, cars_all[car].mac_add, car);
@@ -109,11 +109,11 @@ int main(int argc,char **argv)
 
 	/*Print config in debug mode*/
 	if (debug) {
-		show_config(cars_all, sys_conf);
+		conf.print_config();
 	}
 
 	/*DEBUG: set up histogram log file and print standard histograms to console*/
-	if (debug && sys_conf.detect_mode == DETECT_MODE__HIST) {
+	if (debug && conf.detect_mode == DETECT_MODE__HIST) {
 		hist_log_setup(n_frames);
 
 		printf("STANDARD HISTOGRAMS:\n");
@@ -128,16 +128,18 @@ int main(int argc,char **argv)
 	}
 
 	/*Initialise image matrices*/
-	img = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC3);
-	img_hsv = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC3);
+	img = cv::Mat::zeros(conf.image_h, conf.image_w, CV_8UC3);
+	img_hsv = cv::Mat::zeros(conf.image_h, conf.image_w, CV_8UC3);
 
 	/*Initialise mask for cropping table borders out of image*/
-	crop_mask = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC1);
-	get_cropping_mask(sys_conf, crop_mask);
+	crop_mask = cv::Mat::zeros(conf.image_h, conf.image_w, CV_8UC1);
+	cv::Point tl = cv::Point(conf.crop_w, conf.crop_n);		/*north west corner*/
+	cv::Point br = cv::Point(conf.image_w - conf.crop_e, conf.image_h - conf.crop_s);	/*south east corner*/
+	cv::rectangle(crop_mask, tl, br, 255, -1, 8);
 	
 	/*Initialise vector with masks for each car*/
 	for (int i = 0; i < cars_all.size(); i++) {
-		cv::Mat mask = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC1);
+		cv::Mat mask = cv::Mat::zeros(conf.image_h, conf.image_w, CV_8UC1);
 		masks_all.push_back(mask);
 	}
 	
@@ -145,7 +147,7 @@ int main(int argc,char **argv)
 	// Camera
 	//-----------------------------------------------------------------------------
 	/*Open camera*/
-	cam_set(Camera, sys_conf);
+	cam_set(Camera, conf);
 	if (!Camera.open()) {
         std::cout << "Error opening camera" << std::endl;
         return FAILURE;
@@ -153,8 +155,8 @@ int main(int argc,char **argv)
 	sleep(2);	// wait for camera to "warm up"
 	
 	/*Initialise camera*/
-	if (sys_conf.auto_shutter) {
-		cam_auto_init(Camera, sys_conf, cars_all.size(), crop_mask, debug);
+	if (conf.auto_shutter) {
+		cam_auto_init(Camera, conf, cars_all.size(), crop_mask, debug);
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -173,10 +175,10 @@ int main(int argc,char **argv)
 	******************************************************************************/
 	
 	//TODO: make function for getting background, imshow in debug
-	cv::Mat background = cv::Mat::zeros(sys_conf.image_h, sys_conf.image_w, CV_8UC3);
+	cv::Mat background = cv::Mat::zeros(conf.image_h, conf.image_w, CV_8UC3);
 	cv::Mat diff, global_mask;
 
-	if (sys_conf.get_new_background) {
+	if (conf.get_new_background) {
 		printf("Getting background image, please remove cars and then press enter\n");
 		cv::imshow("Background image", background);
 		cv::waitKey(0);
@@ -224,25 +226,25 @@ int main(int argc,char **argv)
 		}
 
 		/*Detect cars and calculate histograms over each contour*/
-		if (sys_conf.detect_mode == DETECT_MODE__HIST) {
+		if (conf.detect_mode == DETECT_MODE__HIST) {
 			hist_detect_calc(img_hsv, global_mask, contours, hists_calc,
-				sys_conf.car_size_min, sys_conf.car_size_max, frame, debug);
+				conf.car_size_min, conf.car_size_max, frame, debug);
 		}
 
 		/*Update all cars*/
 		for (int car = 0; car < cars_all.size(); car++)
 		{
 			/*Detection using selected mode*/
-			if (sys_conf.detect_mode == DETECT_MODE__SH) {
-				ret = sh_detect(img_hsv, crop_mask, masks_all[car], cars_all[car], sys_conf, buf);
+			if (conf.detect_mode == DETECT_MODE__SH) {
+				ret = sh_detect(img_hsv, crop_mask, masks_all[car], cars_all[car], conf, buf);
 			}
-			else if (sys_conf.detect_mode == DETECT_MODE__HIST) {
+			else if (conf.detect_mode == DETECT_MODE__HIST) {
 				//TODO: do the if statememt for car type within hist_detect
 				if (cars_all[car].hue > 0) {
-					ret = hist_detect(car, sys_conf.chi2_dist_max, sys_conf.intersect_min, contours, hists_calc, hists_std, 0, buf, debug);
+					ret = hist_detect(car, conf.chi2_dist_max, conf.intersect_min, contours, hists_calc, hists_std, 0, buf, debug);
 				}
 				else {
-					ret = hist_detect(car, sys_conf.chi2_dist_max, sys_conf.intersect_min, contours, hists_calc, hists_std, 1, buf, debug);
+					ret = hist_detect(car, conf.chi2_dist_max, conf.intersect_min, contours, hists_calc, hists_std, 1, buf, debug);
 				}
 				
 			}
@@ -261,10 +263,10 @@ int main(int argc,char **argv)
 			else {
 				/*Car found successfully*/
 				cars_all[car].found = true;
-				cars_all[car].update_state(buf[0], buf[1], sys_conf.origin, sys_conf.scale, sys_conf.min_speed, sys_time);
+				cars_all[car].update_state(buf[0], buf[1], conf.origin, conf.scale, conf.min_speed, sys_time);
 			}
 
-			if (output_mode == MODE_DEBUG && sys_conf.detect_mode == DETECT_MODE__SH) {
+			if (output_mode == MODE_DEBUG && conf.detect_mode == DETECT_MODE__SH) {
 				cv::imshow("Object masks (main)", masks_all[car]); /*display each car's mask in debug mode*/
 				cv::waitKey(0);
 			}

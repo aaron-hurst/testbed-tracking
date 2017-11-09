@@ -11,26 +11,6 @@
 #include "time.h"
 #include "car.h"
 
-/*Macros*/
-#define MODE_LIVE			0
-#define MODE_LIVE_CONS		1
-#define MODE_LIVE_LOG		2
-#define MODE_TEST			3
-#define MODE_DEBUG			4
-
-/**********************************************************************************
-* Check and report output mode
-* 
-* Prints description of selected output mode to the console. If specified output
-* mode is not one of the available modes, output_mode is set to a default mode.
-* 
-* output_mode   currently set output mode
-*
-* return: output mode
-**********************************************************************************/
-int set_output_mode(int output_mode);
-
-
 /**********************************************************************************
 * Setup required components for system output
 * 

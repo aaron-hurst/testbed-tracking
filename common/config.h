@@ -13,6 +13,13 @@
 /*Forward declarations*/
 struct Car;
 
+/*Macros*/
+#define MODE_LIVE 0
+#define MODE_LIVE_CONS 1
+#define MODE_LIVE_LOG 2
+#define MODE_TEST 3
+#define MODE_DEBUG 4
+
 //=====================================
 /*! @struct Configuration information
  * 

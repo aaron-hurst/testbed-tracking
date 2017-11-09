@@ -1,41 +1,23 @@
+/*General includes*/
 #include <iostream>		// cout
 #include <string>		// string, to_string
 
+/*External libraries*/
 #include <sys/socket.h>	// socket comms
 #include <netinet/in.h>	// struct sockaddr_in
 #include <sys/time.h>	// system time for JSON
 #include <arpa/inet.h>	// inet_addr
-
 #include <opencv2/opencv.hpp>	// cv::getTickFrequency()
 
-#include "outputs.h"
+/*Project Includes*/
 #include "car.h"
 #include "time.h"
+#include "config.h"
+#include "outputs.h"
 
-#define FAILURE		1
-#define SUCCESS		0
-
-
-int set_output_mode(int output_mode)
-{
-	if (output_mode == MODE_LIVE) {
-		std::cout<<"Mode 0: LIVE - JSON only"<<std::endl;
-	} else if (output_mode == MODE_LIVE_CONS) {
-		std::cout<<"Mode 1: LIVE - JSON + console"<<std::endl;
-	} else if (output_mode == MODE_LIVE_LOG) {
-		std::cout<<"Mode 2: LIVE - JSON + console + csv"<<std::endl;
-	} else if (output_mode == MODE_TEST) {
-		std::cout<<"Mode 3: TEST - console + csv"<<std::endl;
-	} else if (output_mode == MODE_DEBUG) {
-		std::cout<<"Mode 4: DEBUG"<<std::endl;
-	} else {
-		std::cout<<"WARNING: Invalid output mode specified."<<std::endl;
-		std::cout<<"Using default: Mode 1: LIVE - JSON + console"<<std::endl;
-		output_mode = MODE_LIVE_CONS;
-	}
-	return output_mode;
-}
-
+/*Macros*/
+#define FAILURE	1
+#define SUCCESS	0
 
 int output_setup(int output_mode, int &sock, int n_cars)
 {

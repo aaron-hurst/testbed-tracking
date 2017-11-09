@@ -8,6 +8,7 @@
 #include "outputs.h"
 #include "config.h"
 
+/*Macros*/
 #define FAILURE	1
 #define SUCCESS	0
 
@@ -28,8 +29,17 @@ int Config::parse_args(int argc, char** argv)
 	}
 
 	/*Parse output mode*/
-	//TODO: delete this function and put its functionality here (no printing)
-	output_mode = set_output_mode(atoi(argv[2]));
+	output_mode = atoi(argv[2]);
+	if (output_mode != MODE_LIVE &&
+		output_mode != MODE_LIVE_CONS &&
+		output_mode != MODE_LIVE_LOG &&
+		output_mode != MODE_TEST &&
+		output_mode != MODE_DEBUG
+	) {
+		std::cout<<"WARNING: Invalid output mode specified."<<std::endl;
+		std::cout<<"Using default: Mode 1: LIVE - JSON + console"<<std::endl;
+		output_mode = MODE_LIVE_CONS;
+	}
 
 	/*Parse delay*/
 	delay = atoi(argv[3]);

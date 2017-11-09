@@ -16,27 +16,28 @@
 #define SUCCESS		0
 
 
-int output_mode_set(int output_mode)
+int set_output_mode(int output_mode)
 {
 	if (output_mode == MODE_LIVE) {
-		std::cout<<"Output mode: LIVE - JSON only"<<std::endl;
+		std::cout<<"Mode 0: LIVE - JSON only"<<std::endl;
 	} else if (output_mode == MODE_LIVE_CONS) {
-		std::cout<<"Output mode: LIVE - JSON + console"<<std::endl;
+		std::cout<<"Mode 1: LIVE - JSON + console"<<std::endl;
 	} else if (output_mode == MODE_LIVE_LOG) {
-		std::cout<<"Output mode: LIVE - JSON + console + csv"<<std::endl;
+		std::cout<<"Mode 2: LIVE - JSON + console + csv"<<std::endl;
 	} else if (output_mode == MODE_TEST) {
-		std::cout<<"Output mode: TEST - console + csv"<<std::endl;
+		std::cout<<"Mode 3: TEST - console + csv"<<std::endl;
 	} else if (output_mode == MODE_DEBUG) {
-		std::cout<<"Output mode: DEBUG"<<std::endl;
+		std::cout<<"Mode 4: DEBUG"<<std::endl;
 	} else {
-		std::cout<<"WARNING: Invalid output mode specified. Using default: Mode 2: LIVE - JSON + console"<<std::endl;
+		std::cout<<"WARNING: Invalid output mode specified."<<std::endl;
+		std::cout<<"Using default: Mode 1: LIVE - JSON + console"<<std::endl;
 		output_mode = MODE_LIVE_CONS;
 	}
 	return output_mode;
 }
 
 
-int output_setup(int &output_mode, int &sock, int n_cars)
+int output_setup(int output_mode, int &sock, int n_cars)
 {
 	// Set up network socket connection to server (cars controller program)
 	if (output_mode == MODE_LIVE || output_mode == MODE_LIVE_CONS || output_mode == MODE_LIVE_LOG)
@@ -83,7 +84,8 @@ int output_setup(int &output_mode, int &sock, int n_cars)
 }
 
 
-int send_outputs(std::vector<struct Car> cars_all, int output_mode, int sock, struct Time sys_time, int frame)
+int send_outputs(std::vector<struct Car> cars_all, int output_mode, int sock,
+	struct Time sys_time, int frame)
 {
     int ret = 0;
     switch (output_mode) {
@@ -120,7 +122,6 @@ int send_outputs(std::vector<struct Car> cars_all, int output_mode, int sock, st
 
     return SUCCESS;
 }
-
 
 int send_json(std::vector<struct Car> cars_all, int sock, bool debug)
 {

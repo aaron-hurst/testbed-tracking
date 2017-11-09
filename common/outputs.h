@@ -1,12 +1,17 @@
 #ifndef CARSCV_OUTPUTS_H
 #define CARSCV_OUTPUTS_H
 
-#include <sys/socket.h>	// socket comms
+/*General includes*/
+#include <vector>
 
+/*External libraries*/
+#include <sys/socket.h>
 
+/*Project includes*/
 #include "time.h"
 #include "car.h"
 
+/*Macros*/
 #define MODE_LIVE			0
 #define MODE_LIVE_CONS		1
 #define MODE_LIVE_LOG		2
@@ -23,7 +28,7 @@
 *
 * return: output mode
 **********************************************************************************/
-int output_mode_set (int output_mode);
+int set_output_mode(int output_mode);
 
 
 /**********************************************************************************
@@ -38,7 +43,7 @@ int output_mode_set (int output_mode);
 *
 * return: 0 on success, 1 on failure
 **********************************************************************************/
-int output_setup(int &output_mode, int &sock, int n_cars);
+int output_setup(int output_mode, int &sock, int n_cars);
 
 
 /**********************************************************************************

@@ -15,11 +15,18 @@ struct Car;
 
 //=====================================
 /*! @struct Configuration information
+ * 
+ * TODO: variable descriptions
  */
 struct Config
 {
 	/*Detection mode*/
 	int detect_mode;
+
+	/*Operation*/
+	int n_frames;
+	int output_mode;
+	int delay;
 	
 	/*Background*/
 	bool get_new_background;
@@ -49,6 +56,28 @@ struct Config
 	
 	/*Other*/
 	int min_speed;
+
+	//=====================================
+	/*! @brief Parse command line arguments
+	 *
+	 * Run this function after checking that the correct number of command
+	 * line arguments are provided. It will parse the first three (number of
+	 * frames, operation mode and delay) and update the associated config
+	 * parameters.
+	 * 
+	 * @param argc Number of command line arguments
+	 * @param argv Array of command line arguments
+	 * 
+	 * @return 0 on success, 1 on failure
+	 */
+	int parse_args(int, char**);
+
+	//=====================================
+	/*! @brief Print correct usage to console
+	 *
+	 * Prints instructions for correct usage of executable to console.
+	 */
+	void print_usage(void);
 
 	//=====================================
 	/*! @brief Reads config information from config file

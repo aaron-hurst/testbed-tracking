@@ -1,27 +1,16 @@
-/// Tracking of single-hue objects based on colour and size
+//TODO: file prologue
 
-
-/**********************************************************************************
-* GENERAL INCLUDES
-**********************************************************************************/
+/*Genral includes*/
 #include <iostream>		// cout
 #include <vector>		// vector
 #include <string>		// string
 #include <unistd.h>		// sleep
 
-/**********************************************************************************
-* CAMERA INCLUDES
-**********************************************************************************/
+/*External libraries*/
+#include <opencv2/opencv.hpp>
 #include </home/pi/raspicam-0.1.6/src/raspicam_cv.h>
 
-/**********************************************************************************
-* OPENCV INCLUDES
-**********************************************************************************/
-#include <opencv2/opencv.hpp>
-
-/**********************************************************************************
-* LOCAL INCLUDES
-**********************************************************************************/
+/*Project includes*/
 #include "common/config.h"
 #include "common/outputs.h"
 #include "common/camera.h"
@@ -31,61 +20,59 @@
 #include "hue/sh_detect.h"
 #include "histogram/hist_detect.h"
 
-/**********************************************************************************
-* MACROS
-**********************************************************************************/
-#define FAILURE		1
-#define SUCCESS		0
+/******************************************************************************
+ * Macros
+ *****************************************************************************/
+#define FAILURE	1
+#define SUCCESS	0
 
-//TODO: if histogram mode is successful, remove option or move SH detection to a different branch
-#define DETECT_MODE__SH		0
-#define DETECT_MODE__HIST	1
+#define DETECT_MODE__SH	0
+#define DETECT_MODE__HIST 1
 
-#define THRESHOLD	55
-#define DILATION_ITER 	1
+#define THRESHOLD 55	//TODO: replace with config parameter
+#define DILATION_ITER 1	//TODO: replace with config parameter
+
+#define BUF_LEN 5 /*length of buffer for detection output*/
 
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
-	/******************************************************************************
-	* SETUP
-	******************************************************************************/
-	
-	//-----------------------------------------------------------------------------
-	// Variables
-	//-----------------------------------------------------------------------------
-	int n_frames, output_mode, delay;	// arguments
-	bool debug;							// debug parameter passed to functions
-	int ret;							// function return value
-	float buf[5];						// buffer passed to detection algorithm
+	/**************************************************************************
+	 * Variables
+	 *************************************************************************/
+	bool debug;							// track debug mode
+	int ret;							// track function return values
+	float buf[BUF_LEN];					// buffer passed to detection algorithm
 	int sock;							// network socket
-	Config conf;					// store config data
-	Time sys_time;						// store time variables
+	Config conf;						// configuration struct
+	Time sys_time;						// tracks various times
 	raspicam::RaspiCam_Cv Camera;		// camera object
-	std::vector<Car> cars_all;			// store car structs
-	std::vector<cv::Mat> masks_all;		// store masks for each car
+	std::vector<Car> cars_all;			// container for car structs
+	std::vector<cv::Mat> masks_all;		// TODO: review obselescence
 	cv::Mat img, img_hsv, crop_mask;	// images
 
-	std::vector<struct Hist_data> hists_std;	// standard (prototype) histograms from config
-	std::vector<struct Hist_data> hists_calc;	// calculated histograms in each frame
-	std::vector<std::vector<cv::Point>> contours;	// contours calculated in each frame
+	std::vector<struct Hist_data> hists_std;		// prototype histograms
+	std::vector<struct Hist_data> hists_calc;		// observed histograms
+	std::vector<std::vector<cv::Point>> contours;	// detection outlines
 
-	//-----------------------------------------------------------------------------
-	// Arguments
-	//-----------------------------------------------------------------------------
-	n_frames 	= atoi(argv[1]);	// number of frames to process
-	output_mode = atoi(argv[2]);	// output mode
-	delay 		= atoi(argv[3]);	// inter-frame delay in milliseconds
-	
-	// Check and print output mode to the console
-	output_mode = output_mode_set(output_mode);
-	if (output_mode == MODE_DEBUG) {
-		debug = true;
+	/**************************************************************************
+	 * Configuration
+	 *************************************************************************/
+	/*Parse arguments*/
+	ret = conf.parse_args(argc, argv);
+	if (ret == FAILURE) {
+		std::cout<<"ERROR CRITICAL: Unable to parse arguments."<<std::endl;
+		conf.print_usage();
+		return FAILURE;
 	}
 	
-	//-----------------------------------------------------------------------------
-	// Config
-	//-----------------------------------------------------------------------------
+	/*Set debug variable*/
+	if (conf.output_mode == MODE_DEBUG) {
+		debug = true;
+	} else {
+		debug = false;
+	}
+
 	/*Load and set system and car configuration parameters*/
 	ret = conf.read_config();
 	if (ret) {
@@ -117,7 +104,8 @@ int main(int argc,char **argv)
 
 	/*DEBUG: set up histogram log file and print standard histograms to console*/
 	if (debug && conf.detect_mode == DETECT_MODE__HIST) {
-		hist_log_setup(n_frames);
+		hist_log_setup(conf.n_frames);
+		//TODO: move hist_log to a histogram calibration program
 
 		printf("STANDARD HISTOGRAMS:\n");
 		for (int i = 0; i < hists_std.size(); i++) {
@@ -166,7 +154,7 @@ int main(int argc,char **argv)
 	// Outputs
 	//-----------------------------------------------------------------------------
 	//TODO: add configuration paremeters and cars info to log file (at top)
-	ret = output_setup(output_mode, sock, cars_all.size());
+	ret = output_setup(conf.output_mode, sock, cars_all.size());
 	if (ret) {
 		std::cout << "ERROR CRITICAL: setting up output modes failed" << std::endl;
 		ret = 0;
@@ -205,7 +193,7 @@ int main(int argc,char **argv)
 	sys_time.start = cv::getTickCount();
 	sys_time.old = sys_time.start;
 	
-	for (int frame = 0; frame < n_frames; frame++) {
+	for (int frame = 0; frame < conf.n_frames; frame++) {
 		/*Get image*/
 		Camera.grab();
 		Camera.retrieve(img);
@@ -269,14 +257,14 @@ int main(int argc,char **argv)
 				cars_all[car].update_state(buf[0], buf[1], conf, sys_time);
 			}
 
-			if (output_mode == MODE_DEBUG && conf.detect_mode == DETECT_MODE__SH) {
+			if (debug && conf.detect_mode == DETECT_MODE__SH) {
 				cv::imshow("Object masks (main)", masks_all[car]); /*display each car's mask in debug mode*/
 				cv::waitKey(0);
 			}
 		}/*for all cars*/
 		
 		/*Outputs*/
-		send_outputs(cars_all, output_mode, sock, sys_time, frame + 1);		
+		send_outputs(cars_all, conf.output_mode, sock, sys_time, frame + 1);		
 		
 		/*Update old data values*/
 		sys_time.old = sys_time.current;
@@ -286,21 +274,21 @@ int main(int argc,char **argv)
 		}
 
 		/*Impose user-specified delay (to ensure downstream systems can keep up)*/
-		usleep(delay*1000);
+		usleep(conf.delay*1000);
 	}/*for all frames*/
 	
 	
-	/******************************************************************************
-	* EXIT
-	******************************************************************************/
+	/**************************************************************************
+	 * EXIT
+	 *************************************************************************/
 	sys_time.end = cv::getTickCount();
 	sys_time.total = (sys_time.end - sys_time.start) / double (cv::getTickFrequency());
     std::cout << "=========================================================================" << std::endl;
 	printf("\n");
 	printf("Tracking duration: %-5.3f seconds\n", sys_time.total);
-	printf("Total frames:      %d\n", n_frames);
-	printf("Time per frame:    %-3.1f ms/frame\n", sys_time.total/n_frames*1000);
-	printf("FPS:               %-2.2f\n", n_frames/sys_time.total);
+	printf("Total frames:      %d\n", conf.n_frames);
+	printf("Time per frame:    %-3.1f ms/frame\n", sys_time.total/conf.n_frames*1000);
+	printf("FPS:               %-2.2f\n", conf.n_frames/sys_time.total);
 	printf("\n");
 	
 	Camera.release();

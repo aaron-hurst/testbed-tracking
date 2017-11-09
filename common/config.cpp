@@ -5,10 +5,60 @@
 #include <fstream>
 
 /*Project includes*/
-#include "config.h"		// Config struct
+#include "outputs.h"
+#include "config.h"
 
-#define FAILURE		1
-#define SUCCESS		0
+#define FAILURE	1
+#define SUCCESS	0
+
+#define MIN_ARGS 4
+#define MAX_ARGS 5
+
+int Config::parse_args(int argc, char** argv)
+{
+	/*Check for minimum number of arguments*/
+	if (argc < MIN_ARGS) {
+		return FAILURE;
+	}
+
+	/*Parse number of frames*/
+	n_frames = atoi(argv[1]);
+	if (n_frames < 0) {
+		return FAILURE;
+	}
+
+	/*Parse output mode*/
+	//TODO: delete this function and put its functionality here (no printing)
+	output_mode = set_output_mode(atoi(argv[2]));
+
+	/*Parse delay*/
+	delay = atoi(argv[3]);
+	if (delay < 0) {
+		return FAILURE;
+	} else if (delay > 200) {
+		std::cout<<"WARNING: selected delay of "<<delay<<" may cause system to run excessively slowly"<<std::endl;
+	}
+
+	/*Get background image*/
+	if (argc == MAX_ARGS && strcmp(argv[4], "--back") == 0) {
+		//TODO: get background image
+	}
+
+	return SUCCESS;
+}
+
+void Config::print_usage(void)
+{
+	std::cout<<"Correct usage: "<<std::endl;
+	std::cout<<"  ./tracker [frames] [mode] [delay] [[new background]]"<<std::endl;
+	std::cout<<"where:"<<std::endl;
+	std::cout<<"  [frames] number of frames to track (non-negative integer)"<<std::endl;
+	std::cout<<"  [mode]   operating mode (0-4)"<<std::endl;
+	std::cout<<"  [delay]  delay applied between frames in milliseconds (non-negative integer)"<<std::endl;
+	std::cout<<"  [[back]] optional argument to get a new background image"<<std::endl;
+	std::cout<<"                     specify --back to get a new background image"<<std::endl;
+	std::cout<<"                     (only applicable for histogram detection)"<<std::endl	;
+}
 
 int Config::read_config(void)
 {
@@ -67,8 +117,7 @@ int Config::read_config(void)
 	return SUCCESS;
 }
 
-
-
+//TODO: add printing of n_frames, output mode and delay
 void Config::print_config(void)
 {
 	printf("================================\n");

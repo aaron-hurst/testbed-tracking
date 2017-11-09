@@ -7,9 +7,6 @@
 /*External libraries*/
 #include <opencv2/opencv.hpp>
 
-/*Project includes*/
-#include "config.h"
-
 /*Forward declarations*/
 struct Car;
 
@@ -20,6 +17,9 @@ struct Car;
 #define MODE_TEST 3
 #define MODE_DEBUG 4
 
+#define DETECT_MODE_HUE	0
+#define DETECT_MODE_HIST 1
+
 //=====================================
 /*! @struct Configuration information
  * 
@@ -27,21 +27,17 @@ struct Car;
  */
 struct Config
 {
-	/*Detection mode*/
-	int detect_mode;
+	bool config_set;
 
 	/*Operation*/
+	int detect_mode;
 	int n_frames;
 	int output_mode;
 	int delay;
 	
-	/*Background*/
-	bool get_new_background;
-	int diff_threshold;
-
 	/*Camera*/
 	float shutter;
-	bool auto_shutter;
+	bool auto_shutter; //TODO: remove this, only do auto shutter in hue matching detection mode
 	int image_w;
 	int image_h;
 	int crop_n;
@@ -56,6 +52,7 @@ struct Config
 	float scale;
 	int car_size_max;
 	int car_size_min;
+	int back_diff_threshold;
 
 	/*Histogram comparison*/
 	float chi2_dist_max;
@@ -64,6 +61,32 @@ struct Config
 	/*Other*/
 	int min_speed;
 
+	/*Default values*/
+	Config () : config_set(false) {}
+
+	//=====================================
+	/*! @brief Configuration entry-point
+	 *
+	 * Single entry-point function for configuration; manages calls to each
+	 * individual configuration function
+	 * 
+	 * @param argc Number of command line arguments
+	 * @param argv Array of command line arguments
+	 * 
+	 * @return 0 on success, 1 on failure
+	 */
+	int config_master(int, char**);
+	
+	//=====================================
+	/*! @brief Reads config information from config file
+	 *
+	 * Reads and parses general configuration information from the 
+	 * config file, storing it in a Config struct.
+	 * 
+	 * @return 0 on success, 1 on failure
+	 */
+	int read_config(void);
+	
 	//=====================================
 	/*! @brief Parse command line arguments
 	 *
@@ -85,16 +108,6 @@ struct Config
 	 * Prints instructions for correct usage of executable to console.
 	 */
 	void print_usage(void);
-
-	//=====================================
-	/*! @brief Reads config information from config file
-	 *
-	 * Reads and parses general configuration information from the 
-	 * config file, storing it in a Config struct.
-	 * 
-	 * @return 0 on success, 1 on failure
-	 */
-	int read_config(void);
 
 	//=====================================
 	/*! @brief Prints config information to the console

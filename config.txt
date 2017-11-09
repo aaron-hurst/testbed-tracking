@@ -1,6 +1,7 @@
 # Config file for testbed computer vision/ehicle tracking program
 # Any line beginning with "#" is treated as a comment and ignored
 
+# TODO: review these notes
 # Note 1: Hue and delta values of -1 indicate car can only be detected
 # 		  using the histogram comparison method
 # Note 2: Good values for min_sat and min_val may vary depending on
@@ -13,7 +14,7 @@
 detect_mode 1
 
 # Background
-get_new     1
+# TODO: name this more clearly, put in image?
 threshold   50
 
 # Camera

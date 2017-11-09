@@ -11,6 +11,8 @@
 #include "time.h"
 #include "car.h"
 
+//TODO: proper documentation
+
 /**********************************************************************************
 * Setup required components for system output
 * 

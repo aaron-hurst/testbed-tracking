@@ -23,6 +23,6 @@ int cars_read_config(std::vector<struct Car>&);
  * 
  * @return void
  */
-void cars_print_config(std::vector<struct Car>);
+void cars_config_print(std::vector<struct Car>);
 
 #endif /*CARSCV_CAR_CONFIG_H*/

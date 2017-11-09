@@ -1,7 +1,15 @@
 #ifndef CARSCV_CAMERA_H
 #define CARSCV_CAMERA_H
 
-#include "config.h"
+/*External libraries*/
+//#include </home/pi/raspicam-0.1.6/src/raspicam_cv.h>
+
+/*Forward declarations*/
+struct Config;
+namespace raspicam {
+    class RaspiCam_Cv;
+}
+//TODO: proper function documentation
 
 /**********************************************************************************
  * Camera settings
@@ -35,5 +43,18 @@ void cam_set(raspicam::RaspiCam_Cv &Camera, struct Config sys_conf);
  */
 int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf,int n_cars, cv::Mat crop_mask, bool debug);
 
+//=====================================
+/*! @brief Get a new background image
+ *
+ * Asks the user to remove all cars from the testbed before taking an image
+ * which can be used for background subtraction. Image is saved as
+ * background.png in the histogram/ folder.
+ * 
+ * @param height Image height in pixels
+ * @param width Image width in pixels
+ * 
+ * @return 0 on success, 1 on failure
+ */
+void get_background(int, int);
 
-#endif
+#endif /*CARSCV_CAMERA_H*/

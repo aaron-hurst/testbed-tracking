@@ -1,38 +1,30 @@
-// Camera includes
-#include </home/pi/raspicam-0.1.6/src/raspicam_cv.h>
-
-// OpenCV includes
-#include <opencv2/opencv.hpp>
-
-// General includes
+/*General includes*/
 #include <unistd.h>		// usleep
 #include <iostream>		// cout
 
-// Local includes
+/*External libraries*/
+#include </home/pi/raspicam-0.1.6/src/raspicam_cv.h>
+#include <opencv2/opencv.hpp>
+
+/*Project includes*/
 #include "camera.h"
 #include "config.h"
 
-#define FAILURE		1
-#define SUCCESS		0
+/*Macos*/
+#define FAILURE	1
+#define SUCCESS	0
 
-
-/**********************************************************************************
-* MACROS
-**********************************************************************************/
-#define IMG_WIDTH			640
-#define IMG_HEIGHT			480
 #define IMG_BRIGHTNESS		50
 #define IMG_CONTRAST		50
 #define IMG_SATURATION		50
 #define IMG_GAIN			50
 
+//TODO: check shutter values when reviewing auto-shutter function
 #define SHUTTER_MIN         1.6
 #define SHUTTER_MAX         4
 #define SHUTTER_DEFAULT     3.03
 #define SHUTTER_INC         0.1
 #define SHUTTER_EXTRA       0.4
-
-
 
 void cam_set(raspicam::RaspiCam_Cv &Camera, struct Config sys_conf)
 {
@@ -45,7 +37,6 @@ void cam_set(raspicam::RaspiCam_Cv &Camera, struct Config sys_conf)
 	Camera.set(CV_CAP_PROP_EXPOSURE, sys_conf.shutter);
 	return;
 }
-
 
 int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_cars, cv::Mat crop_mask, bool debug)
 {
@@ -126,4 +117,17 @@ int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_
 	// cv::waitKey(0);
 	
 	return SUCCESS;
+}
+
+void get_background(int height, int width)
+{
+	cv::Mat background = cv::Mat::zeros(height, width, CV_8UC3);
+	std::cout<<"Getting new background image."<<std::endl;
+	std::cout<<"Please remove all cars from testbed and then press enter."<<std::endl;
+	getchar();	/*wait for user to press enter*/
+	std::cout<<"Capturing background image..."<<std::endl;
+	Camera.grab();
+	Camera.retrieve(background);
+	std::cout<<"Background image collected, return cars on testbed"<<std::endl;
+	cv::imwrite("background.png", background);
 }

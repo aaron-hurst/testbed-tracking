@@ -9,8 +9,8 @@
 #include "car.h"
 #include "car_config.h"
 
-#define FAILURE		1
-#define SUCCESS		0
+#define FAILURE	1
+#define SUCCESS	0
 
 int cars_read_config(std::vector<struct Car>& cars_all)
 {
@@ -21,7 +21,6 @@ int cars_read_config(std::vector<struct Car>& cars_all)
 	/*Open config file*/
 	std::ifstream conf_file("config.txt");
 	if (!conf_file) {
-		std::cout << "Error loading config file (config.txt) for car data" << std::endl;
 		return FAILURE;
 	}
 
@@ -65,7 +64,7 @@ int cars_read_config(std::vector<struct Car>& cars_all)
     return SUCCESS;
 }
 
-void cars_print_config(std::vector<struct Car> cars_all)
+void cars_config_print(std::vector<struct Car> cars_all)
 {
 	for (int i = 0; i < cars_all.size(); i++) {
 		printf("================================\n");

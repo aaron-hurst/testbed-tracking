@@ -20,14 +20,9 @@
 #include "hue/sh_detect.h"
 #include "histogram/hist_detect.h"
 
-/******************************************************************************
- * Macros
- *****************************************************************************/
+/*Macros*/
 #define FAILURE	1
 #define SUCCESS	0
-
-#define DETECT_MODE__SH	0
-#define DETECT_MODE__HIST 1
 
 #define THRESHOLD 55	//TODO: replace with config parameter
 #define DILATION_ITER 1	//TODO: replace with config parameter
@@ -58,6 +53,14 @@ int main(int argc, char **argv)
 	/**************************************************************************
 	 * Configuration
 	 *************************************************************************/
+	/*Load and set system and car configuration parameters*/
+	ret = conf.read_config();
+	ret += cars_read_config(cars_all);
+	if (ret == FAILURE) {
+		std::cout << "ERROR CRITICAL: Unable to parse configuration file." << std::endl;
+		return FAILURE;
+	}
+
 	/*Parse arguments*/
 	ret = conf.parse_args(argc, argv);
 	if (ret == FAILURE) {
@@ -65,7 +68,7 @@ int main(int argc, char **argv)
 		conf.print_usage();
 		return FAILURE;
 	}
-	
+
 	/*Set debug variable*/
 	if (conf.output_mode == MODE_DEBUG) {
 		debug = true;
@@ -73,19 +76,10 @@ int main(int argc, char **argv)
 		debug = false;
 	}
 
-	/*Load and set system and car configuration parameters*/
-	ret = conf.read_config();
-	if (ret) {
-		std::cout << "ERROR CRITICAL: parsing configuration file failed" << std::endl;
-		return FAILURE;
-	}
-
-	cars_read_config(cars_all);
-	
 	/*Load standard histogram data*/
 	//TODO: instead of a loop in main, move the loop to hist_std_init and pass cars_all to it
 	//TODO: add car type (plain or marker) to config file and histogram struct
-	if (conf.detect_mode == DETECT_MODE__HIST) {
+	if (conf.detect_mode == DETECT_MODE_HIST) {
 		hists_std.clear();
 		for (int car = 0; car < cars_all.size(); car++) {
 			ret = hist_std_init(hists_std, cars_all[car].mac_add, car);
@@ -99,23 +93,23 @@ int main(int argc, char **argv)
 	/*Print config in debug mode*/
 	if (debug) {
 		conf.print_config();
-		cars_print_config(cars_all);
+		cars_config_print(cars_all);
 	}
 
 	/*DEBUG: set up histogram log file and print standard histograms to console*/
-	if (debug && conf.detect_mode == DETECT_MODE__HIST) {
+	if (debug && conf.detect_mode == DETECT_MODE_HIST) {
 		hist_log_setup(conf.n_frames);
 		//TODO: move hist_log to a histogram calibration program
 
-		printf("STANDARD HISTOGRAMS:\n");
-		for (int i = 0; i < hists_std.size(); i++) {
-			printf("%-17s: ", cars_all[hists_std[i].car].mac_add.c_str());
-			for (int j = 0; j < N_BINS; j++) {
-				printf("%1.2f ", hists_std[i].histogram[j]);
-			}
-			printf("\n");
-		}
-		printf("\n");
+		// printf("STANDARD HISTOGRAMS:\n");
+		// for (int i = 0; i < hists_std.size(); i++) {
+		// 	printf("%-17s: ", cars_all[hists_std[i].car].mac_add.c_str());
+		// 	for (int j = 0; j < N_BINS; j++) {
+		// 		printf("%1.2f ", hists_std[i].histogram[j]);
+		// 	}
+		// 	printf("\n");
+		// }
+		// printf("\n");
 	}
 
 	/*Initialise image matrices*/
@@ -169,26 +163,9 @@ int main(int argc, char **argv)
 	cv::Mat background = cv::Mat::zeros(conf.image_h, conf.image_w, CV_8UC3);
 	cv::Mat diff, global_mask;
 
-	if (conf.get_new_background) {
-		printf("Getting background image, please remove cars and then press enter\n");
-		cv::imshow("Background image", background);
-		cv::waitKey(0);
-		Camera.grab();
-		Camera.retrieve(background);
-		printf("Background image collected, place cars back on testbed\n");
-		cv::imwrite("background.png", background);
-	}
-	else {
-		background = cv::imread("background.png", CV_LOAD_IMAGE_COLOR);
-		if (background.empty())	{
-			std::cout << "ERROR CRITICAL: background.png not found" << std::endl;
-			return FAILURE;
-		}
-	}
-	if (debug) {
-		cv::imshow("Background image", background);
-		cv::waitKey(0);
-	}
+	background = cv::imread("background.png", CV_LOAD_IMAGE_COLOR);
+	cv::imshow("Background image", background);
+	cv::waitKey(0);
 	
 	sys_time.start = cv::getTickCount();
 	sys_time.old = sys_time.start;
@@ -217,7 +194,7 @@ int main(int argc, char **argv)
 		}
 
 		/*Detect cars and calculate histograms over each contour*/
-		if (conf.detect_mode == DETECT_MODE__HIST) {
+		if (conf.detect_mode == DETECT_MODE_HIST) {
 			hist_detect_calc(img_hsv, global_mask, contours, hists_calc,
 				conf.car_size_min, conf.car_size_max, frame, debug);
 		}
@@ -226,10 +203,10 @@ int main(int argc, char **argv)
 		for (int car = 0; car < cars_all.size(); car++)
 		{
 			/*Detection using selected mode*/
-			if (conf.detect_mode == DETECT_MODE__SH) {
+			if (conf.detect_mode == DETECT_MODE_HUE) {
 				ret = sh_detect(img_hsv, crop_mask, masks_all[car], cars_all[car], conf, buf);
 			}
-			else if (conf.detect_mode == DETECT_MODE__HIST) {
+			else if (conf.detect_mode == DETECT_MODE_HIST) {
 				//TODO: do the if statememt for car type within hist_detect
 				if (cars_all[car].hue > 0) {
 					ret = hist_detect(car, conf.chi2_dist_max, conf.intersect_min, contours, hists_calc, hists_std, 0, buf, debug);
@@ -257,7 +234,7 @@ int main(int argc, char **argv)
 				cars_all[car].update_state(buf[0], buf[1], conf, sys_time);
 			}
 
-			if (debug && conf.detect_mode == DETECT_MODE__SH) {
+			if (debug && conf.detect_mode == DETECT_MODE_HUE) {
 				cv::imshow("Object masks (main)", masks_all[car]); /*display each car's mask in debug mode*/
 				cv::waitKey(0);
 			}

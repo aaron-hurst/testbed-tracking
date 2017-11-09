@@ -49,7 +49,7 @@ struct Car
 	 * 
 	 * @param px_x Car x-coordinate in image
 	 * @param px_y Car x-coordinate in image
-	 * @param conf Struct containing global configuration parameters
+	 * @param conf Struct containing general configuration parameters
 	 * @param time Struct containing key timestamps
 	 *
 	 * @return void

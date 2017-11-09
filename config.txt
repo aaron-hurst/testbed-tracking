@@ -25,7 +25,6 @@ crop_e 		18
 crop_s 		18
 crop_w 		18
 shutter		3.03
-auto_shutter 0
 
 # Image
 # TODO: min_sat, min_val may not be necessary if histogram detection is successful

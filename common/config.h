@@ -9,6 +9,9 @@
 
 /*Forward declarations*/
 struct Car;
+namespace raspicam {
+    class RaspiCam_Cv;
+}
 
 /*Macros*/
 #define MODE_LIVE 0
@@ -23,8 +26,10 @@ struct Car;
 //=====================================
 /*! @struct Configuration information
  * 
- * TODO: variable descriptions
+ * 
  */
+//TODO: variable descriptions
+//TODO: add cam_set flag to config (initialised after camera setup)
 struct Config
 {
 	bool config_set;
@@ -34,10 +39,10 @@ struct Config
 	int n_frames;
 	int output_mode;
 	int delay;
+	bool debug;
 	
 	/*Camera*/
 	float shutter;
-	bool auto_shutter; //TODO: remove this, only do auto shutter in hue matching detection mode
 	int image_w;
 	int image_h;
 	int crop_n;
@@ -72,10 +77,14 @@ struct Config
 	 * 
 	 * @param argc Number of command line arguments
 	 * @param argv Array of command line arguments
+	 * @param Camera Raspicam camera object
+	 * @param cars_all Vector of car objects
 	 * 
 	 * @return 0 on success, 1 on failure
 	 */
-	int config_master(int, char**);
+	int config_master(int, char**,
+		raspicam::RaspiCam_Cv&,
+		std::vector<struct Car>&);
 	
 	//=====================================
 	/*! @brief Reads config information from config file

@@ -3,11 +3,16 @@
 #include <string>		// to_string, string
 #include <sstream>		// istringstream
 #include <fstream>
+#include <unistd.h>		// sleep
+
+/*External libraries*/
+#include </home/pi/raspicam-0.1.6/src/raspicam_cv.h>
 
 /*Project includes*/
 #include "outputs.h"
 #include "config.h"
 #include "camera.h"
+#include "car_config.h"
 
 /*Macros*/
 #define FAILURE	1
@@ -16,11 +21,63 @@
 #define MIN_ARGS 4
 #define MAX_ARGS 5
 
-int Config::config_master(int argc, char** argv)
+int Config::config_master(int argc, char** argv,
+	raspicam::RaspiCam_Cv& Camera, std::vector<struct Car>& cars_all)
 {
+	/*Variables*/
+	int ret = 0;	/*track function return values*/
 	
-}
+	/*Load and set system and car configuration parameters*/
+	ret = read_config();
+	ret += cars_read_config(cars_all);
+	if (ret != SUCCESS) {
+		std::cout << "ERROR CRITICAL: Unable to parse configuration file." << std::endl;
+		return FAILURE;
+	}
 
+	/*Parse arguments*/
+	ret = parse_args(argc, argv);
+	if (ret != SUCCESS) {
+		std::cout<<"ERROR CRITICAL: Unable to parse arguments."<<std::endl;
+		print_usage();
+		return FAILURE;
+	}
+
+	/*Camera setup*/
+	cam_set(Camera, (*this));
+	if (!Camera.open()) {
+		std::cout << "Error opening camera" << std::endl;
+		return FAILURE;
+	}
+	sleep(2);	/*wait for camera to warm up*/
+
+	/*Get background image*/
+	if (argc == MAX_ARGS) {
+		if (strcmp(argv[4], "--back") == 0) {
+			get_background(image_h, image_w, Camera);
+		}
+	} else if (detect_mode == DETECT_MODE_HIST) {
+		FILE * background_file = fopen("background.png", "r");
+		if (background_file == NULL) { 
+			get_background(image_h, image_w, Camera);
+		}
+	}
+
+	/*Set debug flag*/
+	if (output_mode == MODE_DEBUG) {
+		debug = true;
+	} else {
+		debug = false;
+	}
+
+	/*Print config in debug mode*/
+	if (debug) {
+		print_config();
+		cars_config_print(cars_all);
+	}
+
+	return SUCCESS;
+}
 
 int Config::read_config(void)
 {
@@ -52,7 +109,6 @@ int Config::read_config(void)
 		else if (name == "crop_s")			line_stream >> crop_s;
 		else if (name == "crop_w")			line_stream >> crop_w;
 		else if (name == "shutter")			line_stream >> shutter;
-		else if (name == "auto_shutter") 	line_stream >> auto_shutter;
 		
 		/*Image*/
 		else if (name == "min_sat")			line_stream >> min_sat;
@@ -84,13 +140,6 @@ int Config::parse_args(int argc, char** argv)
 		return FAILURE;
 	}
 
-	/*Check config set*/
-	//TODO: do not need this if movind background get out
-	if (!config_set) {
-		std::cout<<"ERROR: Config not set before parsing arguments"<<std::endl;
-		return FAILURE;
-	}
-
 	/*Parse number of frames*/
 	n_frames = atoi(argv[1]);
 	if (n_frames < 0) {
@@ -116,21 +165,6 @@ int Config::parse_args(int argc, char** argv)
 		return FAILURE;
 	} else if (delay > 200) {
 		std::cout<<"WARNING: selected delay of "<<delay<<" may cause system to run excessively slowly"<<std::endl;
-	}
-
-	//TODO: check return value of get_background
-	//TODO(CRITICAL): move to separate function that is called after camera setup
-	//TODO: add cam_set flag to config (initialised after camera setup)
-	/*Background image - if requested*/
-	if (argc == MAX_ARGS && strcmp(argv[4], "--back") == 0) {
-		get_background(image_h, image_w);
-	}
-	/*Background image - if required but not present*/
-	else if (detect_mode == DETECT_MODE_HIST) {
-		FILE * background_file = fopen("background.png","r");
-		if (background_file == NULL) { 
-			get_background(image_h, image_w);
-		}
 	}
 
 	return SUCCESS;
@@ -177,7 +211,6 @@ void Config::print_config(void)
 	printf(" crop_n:        %d\n", crop_n);
 	printf(" crop_s:        %d\n", crop_s);
 	printf(" shutter:       %1.2f\n", shutter);
-	printf(" force shutter: %d\n", auto_shutter);
 	printf("Image:\n");
 	printf(" min_sat:       %d\n", min_sat);
 	printf(" min_val:       %d\n", min_val);

@@ -26,18 +26,19 @@
 #define SHUTTER_INC         0.1
 #define SHUTTER_EXTRA       0.4
 
-void cam_set(raspicam::RaspiCam_Cv &Camera, struct Config sys_conf)
+void cam_set(raspicam::RaspiCam_Cv& Camera, struct Config conf)
 {
-	Camera.set(CV_CAP_PROP_FRAME_WIDTH, sys_conf.image_w);
-    Camera.set(CV_CAP_PROP_FRAME_HEIGHT, sys_conf.image_h);
+	Camera.set(CV_CAP_PROP_FRAME_WIDTH, conf.image_w);
+    Camera.set(CV_CAP_PROP_FRAME_HEIGHT, conf.image_h);
     Camera.set(CV_CAP_PROP_BRIGHTNESS, IMG_BRIGHTNESS);
     Camera.set(CV_CAP_PROP_CONTRAST, IMG_CONTRAST);
     Camera.set(CV_CAP_PROP_SATURATION, IMG_SATURATION);
     Camera.set(CV_CAP_PROP_GAIN, IMG_GAIN);
-	Camera.set(CV_CAP_PROP_EXPOSURE, sys_conf.shutter);
+	Camera.set(CV_CAP_PROP_EXPOSURE, conf.shutter);
 	return;
 }
 
+//TODO: check obselescence/build another function for the same result using image filtering (convertTo)
 int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_cars, cv::Mat crop_mask, bool debug)
 {
 	// Variables
@@ -119,7 +120,7 @@ int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf, int n_
 	return SUCCESS;
 }
 
-void get_background(int height, int width)
+void get_background(int height, int width, raspicam::RaspiCam_Cv Camera)
 {
 	cv::Mat background = cv::Mat::zeros(height, width, CV_8UC3);
 	std::cout<<"Getting new background image."<<std::endl;

@@ -16,7 +16,7 @@
 
 #define MIN_HIST_VAL 0.01
 
-
+//TODO: check for obselescence/move to new script for histogram calibration
 int hist_log_setup(int total_frames)
 {
 	/*Open file*/

@@ -2,6 +2,7 @@
 #define CARSCV_CAMERA_H
 
 /*External libraries*/
+//TODO: verify not needed
 //#include </home/pi/raspicam-0.1.6/src/raspicam_cv.h>
 
 /*Forward declarations*/
@@ -9,23 +10,22 @@ struct Config;
 namespace raspicam {
     class RaspiCam_Cv;
 }
-//TODO: proper function documentation
 
-/**********************************************************************************
- * Camera settings
- * 
- * Sets standard camera settings: frame width (pixels), frame height (pixels),
- * brightness (??), contrast, saturation, gain (ISO??) and shutter duration.
- * White balance is left on auto and colour capture is used.
- * 
- * Camera    object defining the camera
- * shutter   shutter duration (in units of 3.3ms, i.e. 1 = 3.3ms, 2 = 6.6ms)
+//=====================================
+/*! @brief Apply camera settings
  *
- * return: void
+ * Sets camera image width and height (pixels), brightness, contrast,
+ * saturation, gain and shutter duration. White balance is left on auto and
+ * colour capture is used.
+ * 
+ * @param Camera Raspicam camera object
+ * @param conf Struct containing general configuration parameters
+ * 
+ * @return void
  */
-void cam_set(raspicam::RaspiCam_Cv &Camera, struct Config sys_conf);
+void cam_set(raspicam::RaspiCam_Cv&, struct Config);
 
-
+//TODO: proper function documentation
 /**********************************************************************************
  * Camera auto initialisation
  * 
@@ -53,8 +53,8 @@ int cam_auto_init(raspicam::RaspiCam_Cv &Camera, struct Config &sys_conf,int n_c
  * @param height Image height in pixels
  * @param width Image width in pixels
  * 
- * @return 0 on success, 1 on failure
+ * @return void
  */
-void get_background(int, int);
+void get_background(int, int, raspicam::RaspiCam_Cv);
 
 #endif /*CARSCV_CAMERA_H*/

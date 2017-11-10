@@ -12,7 +12,7 @@
 #define FAILURE	1
 #define SUCCESS	0
 
-int cars_read_config(std::vector<struct Car>& cars_all)
+int cars_config_read(std::vector<struct Car>& cars_all)
 {
 	/*Variables*/
 	std::string line, name, value, tmp;

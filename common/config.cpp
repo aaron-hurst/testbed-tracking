@@ -29,9 +29,9 @@ int Config::config_master(int argc, char** argv,
 	
 	/*Load and set system and car configuration parameters*/
 	ret = read_config();
-	ret += cars_read_config(cars_all);
+	ret += cars_config_read(cars_all);
 	if (ret != SUCCESS) {
-		std::cout << "ERROR CRITICAL: Unable to parse configuration file." << std::endl;
+		std::cout<<"ERROR CRITICAL: Unable to parse configuration file."<<std::endl;
 		return FAILURE;
 	}
 
@@ -70,9 +70,9 @@ int Config::config_master(int argc, char** argv,
 		debug = false;
 	}
 
-	/*Print config in debug mode*/
+	/*Print config to console if in debug mode*/
 	if (debug) {
-		print_config();
+		print_config(stdout);
 		cars_config_print(cars_all);
 	}
 
@@ -183,43 +183,56 @@ void Config::print_usage(void)
 	std::cout<<"                     (only applicable for histogram detection)"<<std::endl	;
 }
 
-void Config::print_config(void)
+int Config::print_config(FILE* pointer)
 {
-	printf("================================\n");
-	printf("Detection mode:");
+	/*Check input pointer*/
+	if (pointer == NULL) {
+		return FAILURE;
+	}
+	
+	/*Check config is set*/
+	if (!config_set) {
+		std::cout<<"ERROR: Cannot print config before it is set"<<std::endl;
+		return FAILURE;
+	}
+
+	fprintf(pointer,"================================\n");
+	fprintf(pointer,"Detection mode:");
 	if (detect_mode == 0) {
-		printf(" hue\n\n");
+		fprintf(pointer," hue matching\n\n");
 	}
 	else if (detect_mode == 1) {
-		printf(" histogram\n");
-		printf(" chi2_dist_max:  %d\n", chi2_dist_max);
+		fprintf(pointer," histogram comparison\n");
+		fprintf(pointer," chi2_dist_max:  %d\n", chi2_dist_max);
 	}
 	else {
-		printf(" ERROR: detection mode unknown\n");
+		fprintf(pointer," ERROR: detection mode unknown\n");
 	}
-	printf("Tracking operation:\n");
-	printf(" n_frames:      %d\n", n_frames);
-	printf(" output_mode:   %d\n", output_mode);
-	printf(" delay:         %d\n", delay);
-	printf("Background:\n");
-	printf(" threshold:     %d\n", back_diff_threshold);	//TODO: re-organise this
-	printf("Camera:\n");
-	printf(" img_w:         %d\n", image_w);
-	printf(" img_h:         %d\n", image_h);
-	printf(" crop_w:        %d\n", crop_w);
-	printf(" crop_e:        %d\n", crop_e);
-	printf(" crop_n:        %d\n", crop_n);
-	printf(" crop_s:        %d\n", crop_s);
-	printf(" shutter:       %1.2f\n", shutter);
-	printf("Image:\n");
-	printf(" min_sat:       %d\n", min_sat);
-	printf(" min_val:       %d\n", min_val);
-	printf(" origin_x:      %d\n", origin[0]);
-	printf(" origin_y:      %d\n", origin[1]);
-	printf(" scale:         %1.3f\n", scale);
-	printf(" size_min:      %d\n", car_size_min);
-	printf(" size_max:      %d\n", car_size_max);	
-	printf("Other:\n");
-	printf(" min_speed:     %d\n", min_speed);
-	printf("================================\n");
+	fprintf(pointer,"Tracking operation:\n");
+	fprintf(pointer," n_frames:      %d\n", n_frames);
+	fprintf(pointer," output_mode:   %d\n", output_mode);
+	fprintf(pointer," delay:         %d\n", delay);
+	fprintf(pointer,"Background:\n");
+	fprintf(pointer," threshold:     %d\n", back_diff_threshold);	//TODO: re-organise this
+	fprintf(pointer,"Camera:\n");
+	fprintf(pointer," img_w:         %d\n", image_w);
+	fprintf(pointer," img_h:         %d\n", image_h);
+	fprintf(pointer," crop_w:        %d\n", crop_w);
+	fprintf(pointer," crop_e:        %d\n", crop_e);
+	fprintf(pointer," crop_n:        %d\n", crop_n);
+	fprintf(pointer," crop_s:        %d\n", crop_s);
+	fprintf(pointer," shutter:       %1.2f\n", shutter);
+	fprintf(pointer,"Image:\n");
+	fprintf(pointer," min_sat:       %d\n", min_sat);
+	fprintf(pointer," min_val:       %d\n", min_val);
+	fprintf(pointer," origin_x:      %d\n", origin[0]);
+	fprintf(pointer," origin_y:      %d\n", origin[1]);
+	fprintf(pointer," scale:         %1.3f\n", scale);
+	fprintf(pointer," size_min:      %d\n", car_size_min);
+	fprintf(pointer," size_max:      %d\n", car_size_max);	
+	fprintf(pointer,"Other:\n");
+	fprintf(pointer," min_speed:     %d\n", min_speed);
+	fprintf(pointer,"================================\n");
+
+	return SUCCESS;
 }

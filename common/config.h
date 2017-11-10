@@ -119,13 +119,18 @@ struct Config
 	void print_usage(void);
 
 	//=====================================
-	/*! @brief Prints config information to the console
+	/*! @brief Prints config information
 	 *
-	 * Prints general configuration information to the console.
+	 * Prints general configuration information to the specified pointer, which
+	 * may be either stdout or a log file. Rudimentary checking is completed
+	 * (to ensure pointer is not null); however, it is the calling function's
+	 * responsibility to ensure a valid pointer.
 	 * 
-	 * @return void
+	 * @param pointer Pointer to either stdout or a log file
+	 * 
+	 * @return 0 on success, 1 on failure
 	 */
-	void print_config(void);
+	int print_config(FILE*);
 };
 
 #endif /*CARSCV_CONFIG_H*/

@@ -14,7 +14,7 @@ struct Car;
  * 
  * @return 0 on success, 1 on failure
  */
-int cars_read_config(std::vector<struct Car>&);
+int cars_config_read(std::vector<struct Car>&);
 
 //=====================================
 /*! @brief Print car config data to console

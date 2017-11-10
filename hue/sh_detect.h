@@ -9,6 +9,7 @@
  * 
  * @param buf
  */
+//TODO: move to more general file or delete function
 void set_buf_zero(float buf[5]);
 
 //TODO: description

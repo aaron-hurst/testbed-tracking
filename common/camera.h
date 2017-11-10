@@ -1,10 +1,6 @@
 #ifndef CARSCV_CAMERA_H
 #define CARSCV_CAMERA_H
 
-/*External libraries*/
-//TODO: verify not needed
-//#include </home/pi/raspicam-0.1.6/src/raspicam_cv.h>
-
 /*Forward declarations*/
 struct Config;
 namespace raspicam {

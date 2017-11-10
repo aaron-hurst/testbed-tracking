@@ -155,18 +155,18 @@ int hist_detect_calc(cv::Mat img_hsv, cv::Mat global_mask,
 	}
 
 	/*Write histogram to log file*/
-	if (debug) {
-		FILE * hist_log;
-		hist_log = fopen("hist_log.csv","a");
-		for (int i = 0; i < hists_calc.size(); i++) {
-			fprintf(hist_log, "%4d,", frame);
-			for (int j = 0; j < N_BINS; j++) {
-				fprintf(hist_log, "%1.2f,", hists_calc[i].histogram[j]);
-			}
-			fprintf(hist_log, "\n");
-		}
-		fclose(hist_log);
-	}
+	// if (debug) {
+	// 	FILE * hist_log;
+	// 	hist_log = fopen("hist_log.csv","a");
+	// 	for (int i = 0; i < hists_calc.size(); i++) {
+	// 		fprintf(hist_log, "%4d,", frame);
+	// 		for (int j = 0; j < N_BINS; j++) {
+	// 			fprintf(hist_log, "%1.2f,", hists_calc[i].histogram[j]);
+	// 		}
+	// 		fprintf(hist_log, "\n");
+	// 	}
+	// 	fclose(hist_log);
+	// }
 
 	return SUCCESS;
 }

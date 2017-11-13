@@ -70,10 +70,12 @@ int Config::config_master(int argc, char** argv,
 		debug = false;
 	}
 
+	config_set = true;	/*record config has been completed*/
+
 	/*Print config to console if in debug mode*/
 	if (debug) {
 		print_config(stdout);
-		cars_config_print(cars_all);
+		cars_config_print(cars_all, stdout);
 	}
 
 	return SUCCESS;
@@ -127,8 +129,6 @@ int Config::read_config(void)
 		/*Other*/
 		if       (name == "min_speed")	line_stream >> min_speed;
 	}
-	
-	config_set = true;	/*record config has been completed*/
 
 	return SUCCESS;
 }
@@ -185,7 +185,7 @@ void Config::print_usage(void)
 
 int Config::print_config(FILE* pointer)
 {
-	/*Check input pointer*/
+	/*Check validity of pointer*/
 	if (pointer == NULL) {
 		return FAILURE;
 	}

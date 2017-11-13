@@ -17,12 +17,18 @@ struct Car;
 int cars_config_read(std::vector<struct Car>&);
 
 //=====================================
-/*! @brief Print car config data to console
+/*! @brief Print car config information
  *
- * @param cars_all Vector containing all car objects
+ * Prints car-specific configuration information to the specified pointer. This
+ * may be either stdout or a log file. Rudimentary checking is completed (to
+ * ensure pointer is not null and config is set); however, it is the calling
+ * function's responsibility to ensure a valid pointer.
  * 
- * @return void
+ * @param cars_all Vector containing all car objects
+ * @param pointer Pointer to either stdout or a log file
+ * 
+ * @return 0 on success, 1 on failure
  */
-void cars_config_print(std::vector<struct Car>);
+int cars_config_print(std::vector<struct Car>, FILE*);
 
 #endif /*CARSCV_CAR_CONFIG_H*/

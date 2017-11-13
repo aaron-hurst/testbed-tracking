@@ -64,14 +64,26 @@ int cars_config_read(std::vector<struct Car>& cars_all)
     return SUCCESS;
 }
 
-void cars_config_print(std::vector<struct Car> cars_all)
+int cars_config_print(std::vector<struct Car> cars_all, FILE* pointer)
 {
-	for (int i = 0; i < cars_all.size(); i++) {
-		printf("================================\n");
-		std::cout << "Car: "<< cars_all[i].name << std::endl;
-		std::cout << " MAC Address: " << cars_all[i].mac_add << std::endl;
-		std::cout << " mid hue:     " << cars_all[i].hue << std::endl;
-		std::cout << " delta hue:   " << cars_all[i].delta << std::endl;
+	/*Check validity of pointer*/
+	if (pointer == NULL) {
+		return FAILURE;
 	}
-	printf("================================\n\n");
+
+	for (int i = 0; i < cars_all.size(); i++) {
+		fprintf(pointer, "================================\n");
+		fprintf(pointer, "Car: %s\n", cars_all[i].name.c_str());
+		fprintf(pointer, " MAC Address: %s\n", cars_all[i].mac_add.c_str());
+		fprintf(pointer, " mid hue:     %d\n", cars_all[i].hue);
+		fprintf(pointer, " delta hue:   %d\n", cars_all[i].delta);
+	
+		// std::cout << "Car: "<< cars_all[i].name << std::endl;
+		// std::cout << " MAC Address: " << cars_all[i].mac_add << std::endl;
+		// std::cout << " mid hue:     " << cars_all[i].hue << std::endl;
+		// std::cout << " delta hue:   " << cars_all[i].delta << std::endl;
+	}
+	fprintf(pointer,"================================\n\n");
+
+	return SUCCESS;
 }

@@ -121,10 +121,10 @@ struct Config
 	//=====================================
 	/*! @brief Prints config information
 	 *
-	 * Prints general configuration information to the specified pointer, which
-	 * may be either stdout or a log file. Rudimentary checking is completed
-	 * (to ensure pointer is not null); however, it is the calling function's
-	 * responsibility to ensure a valid pointer.
+	 * Prints general configuration information to the specified pointer. This
+	 * may be either stdout or a log file. Rudimentary checking is complete
+	 * (to ensure pointer is not null and config is set); however, it is the
+	 * calling function's responsibility to ensure a valid pointer.
 	 * 
 	 * @param pointer Pointer to either stdout or a log file
 	 * 

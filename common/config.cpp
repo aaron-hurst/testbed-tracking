@@ -38,7 +38,7 @@ int Config::config_master(int argc, char** argv,
 		return FAILURE;
 	}
 
-	//TODO: move this to where car config is done
+	/*Record number of cars*/
 	n_cars = cars_all.size();
 
 	/*Parse arguments*/
@@ -89,7 +89,7 @@ int Config::config_master(int argc, char** argv,
 	}
 
 	/*Setup outputs*/
-	ret = output_setup();
+	ret = output_setup(cars_all);
 	if (ret != SUCCESS) {
 		std::cout<<"ERROR: Unable set up outputs."<<std::endl;
 		return FAILURE;
@@ -141,7 +141,6 @@ int Config::read_config(void)
 		
 		/*Histogram comparison*/
 		if      (name == "chi2_dist_max")	line_stream >> chi2_dist_max;
-		else if (name == "intersect_min")	line_stream >> intersect_min;
 		
 		/*Other*/
 		if       (name == "min_speed")	line_stream >> min_speed;
@@ -188,7 +187,7 @@ int Config::parse_args(int argc, char** argv)
 	return SUCCESS;
 }
 
-int Config::output_setup(void)
+int Config::output_setup(std::vector<struct Car> cars_all)
 {
 	int ret = SUCCESS; /*track return values*/
 
@@ -217,7 +216,6 @@ int Config::output_setup(void)
 		std::cout << "Connected" << std::endl;
 	}
 	
-	//TODO: add configuration paremeters and cars info to log file (at top)
 	/*Set up log file*/
 	if (output_mode == MODE_LIVE_LOG ||
 		output_mode == MODE_TEST ||
@@ -232,9 +230,9 @@ int Config::output_setup(void)
 
 		/*Write configuration information to log*/
 		ret = print_config(log_file);
-		//ret += cars_config_print(cars_all, log_file);
+		ret += cars_config_print(cars_all, log_file);
 		if (ret != SUCCESS) {
-			std::cout<<"ERROR: Unable to print config information"<<std::endl;
+			std::cout<<"ERROR: Unable to print config info to log."<<std::endl;
 			return FAILURE;
 		}
 		/*Write data headers to log (one set per car)*/
@@ -292,7 +290,7 @@ int Config::print_config(FILE* pointer)
 	fprintf(pointer," output_mode:   %d\n", output_mode);
 	fprintf(pointer," delay:         %d\n", delay);
 	fprintf(pointer,"Background:\n");
-	fprintf(pointer," threshold:     %d\n", back_diff_threshold);	//TODO: re-organise this
+	fprintf(pointer," threshold:     %d\n", back_diff_threshold);
 	fprintf(pointer,"Camera:\n");
 	fprintf(pointer," img_w:         %d\n", image_w);
 	fprintf(pointer," img_h:         %d\n", image_h);

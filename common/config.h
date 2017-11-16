@@ -29,49 +29,45 @@ namespace raspicam {
  * 
  */
 //TODO: variable descriptions
-//TODO: add cam_set flag to config (initialised after camera setup)
-//TODO: reduce number of variables
 struct Config
 {
-	bool config_set;
-
-	/*Operation*/
+	/*System operation*/
 	int detect_mode;
 	int n_frames;
 	int output_mode;
 	int delay;
 	bool debug;
+
+	/*System state*/
+	bool config_set;
+	int sock;
+	int n_cars;
+
+	/*Image processing*/
+	int min_sat;
+	int min_val;
+	int crop_n;
+	int crop_e;
+	int crop_s;
+	int crop_w;
+	int car_size_max;
+	int car_size_min;
+
+	/*Car state estimation parameters*/
+	int min_speed;
+	int origin[2];
+	float scale;
 	
 	/*Camera*/
 	float shutter;
 	int image_w;
 	int image_h;
-	int crop_n;
-	int crop_e;
-	int crop_s;
-	int crop_w;
-	
-	/*Image*/
-	int min_sat;
-	int min_val;
-	int origin[2];
-	float scale;
-	int car_size_max;
-	int car_size_min;
-	int back_diff_threshold;
 
 	/*Histogram comparison*/
 	float chi2_dist_max;
 	float intersect_min;
+	int back_diff_threshold;
 	
-	/*Other*/
-	int min_speed;
-
-	/*NEW*/ //TODO: reorganise
-	int sock;	// network socket address
-	int n_cars;	// number of cars
-	//std::vector<Car> cars_all;			// container for car structs
-
 	/*Default values*/
 	Config () : config_set(false) {}
 
@@ -124,9 +120,11 @@ struct Config
 	 * communication to controller program and/or create log file and write
 	 * configuration and data headers to it.
 	 * 
+	 * @param cars_all Vector of car objects
+	 * 
 	 * @return 0 on success, 1 on failure
 	 */
-	int output_setup(void);
+	int output_setup(std::vector<struct Car>);
 
 	//=====================================
 	/*! @brief Print correct usage to console

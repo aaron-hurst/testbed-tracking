@@ -23,8 +23,7 @@
 #define FAILURE	1
 #define SUCCESS	0
 
-#define THRESHOLD 55	//TODO: replace with config parameter
-#define DILATION_ITER 1	//TODO: replace with config parameter
+#define DILATION_ITER 1
 
 #define BUF_LEN 5 /*length of buffer for detection output*/
 
@@ -36,7 +35,6 @@ int main(int argc, char **argv)
 	 *************************************************************************/
 	int ret;							// track function return values
 	float buf[BUF_LEN];					// buffer passed to detection algorithm
-	int sock;							// network socket
 	Config conf;						// configuration struct
 	Time sys_time;						// tracks various times
 	raspicam::RaspiCam_Cv Camera;		// camera object
@@ -117,10 +115,9 @@ int main(int argc, char **argv)
 		//cv::cvtColor(img, img_hsv, cv::COLOR_RGB2HSV);  /*convert to HSV - only needed for hue*/
 
 		/*Get global mask*/
-		//TODO: save background image, allow user to use previous background image (e.g. type Y and press enter)
 		cv::absdiff(background, img, diff);
 		cv::cvtColor(diff, global_mask, cv::COLOR_BGR2GRAY);
-		cv::threshold(global_mask, global_mask, THRESHOLD, 255, cv::THRESH_BINARY);
+		cv::threshold(global_mask, global_mask, conf.back_diff_threshold, 255, cv::THRESH_BINARY);
 		global_mask = global_mask & crop_mask;
 		cv::dilate(global_mask, global_mask, cv::Mat(), cv::Point(-1, -1), DILATION_ITER); // 3x3 dilation
 
@@ -180,7 +177,7 @@ int main(int argc, char **argv)
 		}/*for all cars*/
 		
 		/*Outputs*/
-		send_outputs(cars_all, conf.output_mode, sock, sys_time, frame + 1);		
+		send_outputs(cars_all, conf.output_mode, conf.sock, sys_time, frame + 1);		
 		
 		/*Update old data values*/
 		sys_time.old = sys_time.current;

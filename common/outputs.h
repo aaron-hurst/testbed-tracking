@@ -14,21 +14,6 @@
 //TODO: proper documentation
 
 /**********************************************************************************
-* Setup required components for system output
-* 
-* Depending on the output mode selected: (1) set up network socket for communication
-* of JSON files to controller program, and (2) set up log file.
-* 
-* output_mode   currently set output mode
-* sock          network socket for inter-program communication
-* n_cars        number of cars
-*
-* return: 0 on success, 1 on failure
-**********************************************************************************/
-int output_setup(int output_mode, int &sock, int n_cars);
-
-
-/**********************************************************************************
 * Manages program outputs
 * 
 * Reads the current output mode and calls the appropriate output functions,
@@ -103,5 +88,4 @@ int write_console(std::vector<struct Car> cars_all, int frame);
 **********************************************************************************/
 int write_log(std::vector<struct Car> cars_all, struct Time sys_time);
 
-
-#endif
+#endif /*CARSCV_OUTPUTS_H*/

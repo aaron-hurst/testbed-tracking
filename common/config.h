@@ -30,6 +30,7 @@ namespace raspicam {
  */
 //TODO: variable descriptions
 //TODO: add cam_set flag to config (initialised after camera setup)
+//TODO: reduce number of variables
 struct Config
 {
 	bool config_set;
@@ -65,6 +66,11 @@ struct Config
 	
 	/*Other*/
 	int min_speed;
+
+	/*NEW*/ //TODO: reorganise
+	int sock;	// network socket address
+	int n_cars;	// number of cars
+	//std::vector<Car> cars_all;			// container for car structs
 
 	/*Default values*/
 	Config () : config_set(false) {}
@@ -110,6 +116,17 @@ struct Config
 	 * @return 0 on success, 1 on failure
 	 */
 	int parse_args(int, char**);
+
+	//=====================================
+	/*! @brief Set output channels
+	 *
+	 * Depending on the output mode in use, may initialise network socket for
+	 * communication to controller program and/or create log file and write
+	 * configuration and data headers to it.
+	 * 
+	 * @return 0 on success, 1 on failure
+	 */
+	int output_setup(void);
 
 	//=====================================
 	/*! @brief Print correct usage to console

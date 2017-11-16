@@ -6,6 +6,9 @@
 #include <unistd.h>		// sleep
 
 /*External libraries*/
+#include <sys/socket.h>	// socket comms
+#include <netinet/in.h>	// struct sockaddr_in
+#include <arpa/inet.h>	// inet_addr
 #include </home/pi/raspicam-0.1.6/src/raspicam_cv.h>
 
 /*Project includes*/
@@ -31,14 +34,17 @@ int Config::config_master(int argc, char** argv,
 	ret = read_config();
 	ret += cars_config_read(cars_all);
 	if (ret != SUCCESS) {
-		std::cout<<"ERROR CRITICAL: Unable to parse configuration file."<<std::endl;
+		std::cout<<"ERROR: Unable to parse config file."<<std::endl;
 		return FAILURE;
 	}
+
+	//TODO: move this to where car config is done
+	n_cars = cars_all.size();
 
 	/*Parse arguments*/
 	ret = parse_args(argc, argv);
 	if (ret != SUCCESS) {
-		std::cout<<"ERROR CRITICAL: Unable to parse arguments."<<std::endl;
+		std::cout<<"ERROR: Unable to parse arguments."<<std::endl;
 		print_usage();
 		return FAILURE;
 	}
@@ -46,7 +52,7 @@ int Config::config_master(int argc, char** argv,
 	/*Camera setup*/
 	cam_set(Camera, (*this));
 	if (!Camera.open()) {
-		std::cout << "Error opening camera" << std::endl;
+		std::cout<<"ERROR: unable to open camera."<<std::endl;
 		return FAILURE;
 	}
 	sleep(2);	/*wait for camera to warm up*/
@@ -74,8 +80,19 @@ int Config::config_master(int argc, char** argv,
 
 	/*Print config to console if in debug mode*/
 	if (debug) {
-		print_config(stdout);
-		cars_config_print(cars_all, stdout);
+		ret = print_config(stdout);
+		ret += cars_config_print(cars_all, stdout);
+	}
+	if (ret != SUCCESS) {
+		std::cout<<"ERROR: Unable to print config information."<<std::endl;
+		return FAILURE;
+	}
+
+	/*Setup outputs*/
+	ret = output_setup();
+	if (ret != SUCCESS) {
+		std::cout<<"ERROR: Unable set up outputs."<<std::endl;
+		return FAILURE;
 	}
 
 	return SUCCESS;
@@ -164,7 +181,69 @@ int Config::parse_args(int argc, char** argv)
 	if (delay < 0) {
 		return FAILURE;
 	} else if (delay > 200) {
-		std::cout<<"WARNING: selected delay of "<<delay<<" may cause system to run excessively slowly"<<std::endl;
+		std::cout<<"WARNING: selected delay of "<<delay;
+		std::cout<<" may cause system to run excessively slowly"<<std::endl;
+	}
+
+	return SUCCESS;
+}
+
+int Config::output_setup(void)
+{
+	int ret = SUCCESS; /*track return values*/
+
+	/*Set up network socket connection to server (cars controller program)*/
+	if (output_mode == MODE_LIVE ||
+		output_mode == MODE_LIVE_CONS ||
+		output_mode == MODE_LIVE_LOG)
+	{
+        /*Create socket*/
+        sock = socket(AF_INET, SOCK_STREAM, 0);
+		if (sock == -1) {
+			std::cout<<"ERROR: Could not create socket"<<std::endl;
+			return FAILURE;
+		}
+	
+		struct sockaddr_in server;
+		server.sin_addr.s_addr = inet_addr("127.0.0.1");
+		server.sin_family = AF_INET;
+		server.sin_port = htons(1520);
+	
+		/*Connect to server*/
+		if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0) {
+			std::cout<<"ERROR: Connection failed"<< std::endl;
+			return FAILURE;
+		}
+		std::cout << "Connected" << std::endl;
+	}
+	
+	//TODO: add configuration paremeters and cars info to log file (at top)
+	/*Set up log file*/
+	if (output_mode == MODE_LIVE_LOG ||
+		output_mode == MODE_TEST ||
+		output_mode == MODE_DEBUG)
+	{
+		FILE * log_file;
+		log_file = fopen("log.csv","w");		/*clear log file*/
+		if (log_file == NULL) {
+			std::cout<<"ERROR: Unable to open log file"<< std::endl;
+			return FAILURE;
+		}
+
+		/*Write configuration information to log*/
+		ret = print_config(log_file);
+		//ret += cars_config_print(cars_all, log_file);
+		if (ret != SUCCESS) {
+			std::cout<<"ERROR: Unable to print config information"<<std::endl;
+			return FAILURE;
+		}
+		/*Write data headers to log (one set per car)*/
+		fprintf(log_file,"time (s)");
+		for (int i = 0; i < n_cars; i++) {
+			fprintf(log_file,",found,x (mm),y (mm),v_x (mm/s),v_y (mm/s),theta (degrees)");
+		}
+		fprintf(log_file,"\n");
+		fclose(log_file);
 	}
 
 	return SUCCESS;
@@ -173,14 +252,13 @@ int Config::parse_args(int argc, char** argv)
 void Config::print_usage(void)
 {
 	std::cout<<"Correct usage: "<<std::endl;
-	std::cout<<"  ./tracker [frames] [mode] [delay] [[new background]]"<<std::endl;
+	std::cout<<"  ./tracker [frames] [mode] [delay] [[--back]]"<<std::endl;
 	std::cout<<"where:"<<std::endl;
-	std::cout<<"  [frames] number of frames to track (non-negative integer)"<<std::endl;
-	std::cout<<"  [mode]   operating mode (0-4)"<<std::endl;
-	std::cout<<"  [delay]  delay applied between frames in milliseconds (non-negative integer)"<<std::endl;
-	std::cout<<"  [[back]] optional argument to get a new background image"<<std::endl;
-	std::cout<<"                     specify --back to get a new background image"<<std::endl;
-	std::cout<<"                     (only applicable for histogram detection)"<<std::endl	;
+	std::cout<<"  [frames]   number of frames to track"<<std::endl;
+	std::cout<<"  [mode]     operating mode (0-4)"<<std::endl;
+	std::cout<<"  [delay]    delay between frames in milliseconds"<<std::endl;
+	std::cout<<"  [[--back]] optional argument to get a new background image"<<std::endl;
+	std::cout<<"             (only applicable for histogram detection)"<<std::endl;
 }
 
 int Config::print_config(FILE* pointer)
@@ -192,7 +270,7 @@ int Config::print_config(FILE* pointer)
 	
 	/*Check config is set*/
 	if (!config_set) {
-		std::cout<<"ERROR: Cannot print config before it is set"<<std::endl;
+		std::cout<<"ERROR: Cannot print config before it is set."<<std::endl;
 		return FAILURE;
 	}
 
@@ -206,7 +284,8 @@ int Config::print_config(FILE* pointer)
 		fprintf(pointer," chi2_dist_max:  %d\n", chi2_dist_max);
 	}
 	else {
-		fprintf(pointer," ERROR: detection mode unknown\n");
+		fprintf(pointer,"ERROR: detection mode unknown\n");
+		return FAILURE;
 	}
 	fprintf(pointer,"Tracking operation:\n");
 	fprintf(pointer," n_frames:      %d\n", n_frames);

@@ -19,53 +19,6 @@
 #define FAILURE	1
 #define SUCCESS	0
 
-int output_setup(int output_mode, int &sock, int n_cars)
-{
-	// Set up network socket connection to server (cars controller program)
-	if (output_mode == MODE_LIVE || output_mode == MODE_LIVE_CONS || output_mode == MODE_LIVE_LOG)
-	{
-        // Create socket
-        sock = socket(AF_INET, SOCK_STREAM, 0);
-		if (sock == -1)
-		{
-			std::cout<< "ERROR: Could not create socket" <<std::endl;
-			return FAILURE;
-		}
-		std::cout << "Socket created" << std::endl;
-	
-		struct sockaddr_in server;
-		server.sin_addr.s_addr = inet_addr("127.0.0.1");
-		server.sin_family = AF_INET;
-		server.sin_port = htons(1520);
-	
-		// Connect to remote server
-		if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
-		{
-			std::cout<< "ERROR: Connection failed" << std::endl;
-			return FAILURE;
-		}
-		std::cout << "Connected" << std::endl;
-	}
-	
-	// Set up log file header
-	if (output_mode == MODE_LIVE_LOG || output_mode == MODE_TEST || output_mode == MODE_DEBUG)
-	{
-		FILE * log_csv;
-		log_csv = fopen("log.csv","w");		// clear log file
-		fprintf(log_csv,"time (s)");        // begin header with time
-		for (int i = 0; i < n_cars; i++)
-		{
-			// Print one set of headers for each car
-			fprintf(log_csv,",found,x (mm),y (mm),v_x (mm/s),v_y (mm/s),theta (degrees)");
-		}
-		fprintf(log_csv,"\n");
-		fclose(log_csv);
-	}
-
-	return 0;
-}
-
-
 int send_outputs(std::vector<struct Car> cars_all, int output_mode, int sock,
 	struct Time sys_time, int frame)
 {

@@ -41,9 +41,10 @@ int main(int argc, char **argv)
 	Time sys_time;						// tracks various times
 	raspicam::RaspiCam_Cv Camera;		// camera object
 	std::vector<Car> cars_all;			// container for car structs
-	std::vector<cv::Mat> masks_all;		// TODO: review obselescence
+	std::vector<cv::Mat> masks_all;		// TODO: review obselescence/move to sh_detect class
 	cv::Mat img, img_hsv, crop_mask;	// images
 
+	//TODO: move these to HistDetector class
 	std::vector<struct Hist_data> hists_std;		// prototype histograms
 	std::vector<struct Hist_data> hists_calc;		// observed histograms
 	std::vector<std::vector<cv::Point>> contours;	// detection outlines
@@ -53,17 +54,9 @@ int main(int argc, char **argv)
 	 *************************************************************************/
 	ret = conf.config_master(argc, argv, Camera, cars_all);
 	if (ret != SUCCESS) {
-		std::cout << "ERROR CRITICAL: Unable to perform configuration" << std::endl;
+		std::cout<<"ERROR CRITICAL: Unable to perform configuration."<<std::endl;
 		return FAILURE;
 	}
-
-	//TODO: add configuration paremeters and cars info to log file (at top)
-	ret = output_setup(conf.output_mode, sock, cars_all.size());
-	if (ret != SUCCESS) {
-		std::cout << "ERROR CRITICAL: Unable to set up outputs" << std::endl;
-		return FAILURE;
-	}
-
 
 	/*Initialise image matrices*/
 	img = cv::Mat::zeros(conf.image_h, conf.image_w, CV_8UC3);
